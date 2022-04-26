@@ -2,3 +2,5 @@
 /saved/*
 !/data/.gitkeep
 !/saved/.gitkeep
+/code/baseline/__pycache__
+/code/wandb
