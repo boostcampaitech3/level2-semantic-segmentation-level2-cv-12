@@ -1,0 +1,4 @@
+/data/*
+/saved/*
+!/data/.gitkeep
+!/saved/.gitkeep

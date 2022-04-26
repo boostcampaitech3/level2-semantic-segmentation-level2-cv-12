@@ -87,20 +87,6 @@ def make_dir(saved_dir):
         
 def save_model(model, saved_dir, file_name='fcn_resnet50_best_model(pretrained).pth'):
     check_point = {'net': model.state_dict()}
-    # n_try = 0
-    # while True:
-    #     n_try += 1
-    #     try:
-    #         if n_try == 1:
-    #             os.makedirs(saved_dir, exist_ok=False)
-    #             output_path = os.path.join(saved_dir, file_name)
-    #         else:
-    #             os.makedirs(f'{saved_dir}_{n_try}', exist_ok=False)
-    #             output_path = os.path.join(f'{saved_dir}_{n_try}', file_name)
-    #         break
-
-    #     except: 
-    #         pass
     output_path = os.path.join(saved_dir, file_name)
     print(f"Save model in {output_path}")
     torch.save(model.module.state_dict(), output_path)
@@ -214,10 +200,6 @@ def train(train_path, val_path, args):
     )
     scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
 
-    # -- logging
-    # logger = SummaryWriter(log_dir=save_dir)
-    # with open(os.path.join(save_dir, 'config.json'), 'w', encoding='utf-8') as f:
-    #     json.dump(vars(args), f, ensure_ascii=False, indent=4)
     best_loss = 9999999
     best_mIoU = 0
     for epoch in range(args.epochs):
@@ -251,12 +233,12 @@ def train(train_path, val_path, args):
             acc, acc_cls, mIoU, fwavacc, IoU = label_accuracy_score(hist)
             
             # step 주기에 따른 loss 출력
-            if (step + 1) % 25 == 0:
+            if step % 25 == 0:
                 pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], \
                         Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
                 # print(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], \
                 #         Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
-
+            break
         scheduler.step()
 
         # validation 주기에 따른 loss 출력 및 best model 저장
@@ -279,9 +261,6 @@ def train(train_path, val_path, args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    # from dotenv import load_dotenv
-    import os
-    # load_dotenv(verbose=True)
 
     # Data and model checkpoints directories
     parser.add_argument('--seed', type=int, default=21, help='random seed (default: 42)')
@@ -304,7 +283,7 @@ if __name__ == '__main__':
 
     # segmentation
     parser.add_argument('--saved_dir', type=str, default='../saved')
-    parser.add_argument('--dataset_path', type=str, default='../../data')
+    parser.add_argument('--dataset_path', type=str, default='/opt/ml/input/data')
     args = parser.parse_args()
     print(args)
 

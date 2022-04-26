@@ -6,8 +6,6 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
-# from dataset import TestDataset, MaskBaseDataset
-
 import numpy as np
 from tqdm import tqdm
 from glob import glob
@@ -70,21 +68,16 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 @torch.no_grad()
-def inference(test_path, model_dir, args):
+def inference(test_path, args):
     """
     """
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-     
-    latest = sorted(glob(model_dir+'/*'))[-1].split('/')[-1]
-    model_path = os.path.join(model_dir, latest)
-    if args.model_path:
-        model_path = args.model_path
-    model = load_model(model_path, device).to(device)
+    model = load_model(args.model_path, device).to(device)
 
     # transform
-    transform_module = getattr(import_module("dataset"), 'TestAugmentation')  # default: BaseAugmentation
+    transform_module = getattr(import_module("dataset"), 'TestAugmentation') 
     test_transform = transform_module(
         resize=args.resize,
         )
@@ -107,15 +100,15 @@ def inference(test_path, model_dir, args):
 
     print("Calculating inference results..")
 
-    submission = pd.read_csv('../submission/sample_submission.csv', index_col=None)
+    submission = pd.read_csv('/opt/ml/input/code/submission/sample_submission.csv', index_col=None)
 
-    file_names, preds = test(model, test_loader, device)
-    for file_name, string in zip(file_names, preds):
-        submission = submission.append({
-            "image_id" : file_name, 
-            "PredictionString" : ' '.join(str(e) for e in string.tolist())
-            }, ignore_index=True)
-    submission.to_csv(f"{model_dir}/{latest}.csv", index=False)
+    # file_names, preds = test(model, test_loader, device)
+    # for file_name, string in zip(file_names, preds):
+    #     submission = submission.append({
+    #         "image_id" : file_name, 
+    #         "PredictionString" : ' '.join(str(e) for e in string.tolist())
+    #         }, ignore_index=True)
+    submission.to_csv(args.model_path.replace('.pth', '.csv'), index=False)
     print(f'Inference Done!')
 
 
@@ -128,21 +121,14 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, default='BaseModel', help='model type (default: BaseModel)')
 
     # Container environment
-    parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_EVAL', '../../data'))
-    parser.add_argument('--model_dir', type=str, default=os.environ.get('SM_CHANNEL_MODEL', '../saved'))
-    # parser.add_argument('--output_dir', type=str, default=os.environ.get('SM_OUTPUT_DATA_DIR', '../output'))
+    parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_EVAL', '/opt/ml/input/data'))
 
     # segmentation
-    parser.add_argument('--dataset_path', type=str, default='../../data')
+    parser.add_argument('--dataset_path', type=str, default='/opt/ml/input/data')
     parser.add_argument('--model_path', type=str, default='')
     
     args = parser.parse_args()
 
-    data_dir = args.data_dir
-    model_dir = args.model_dir + '/' + args.model 
-    # output_dir = args.output_dir
-
-    # os.makedirs(output_dir, exist_ok=True)
     test_path = args.dataset_path + '/test.json'
 
-    inference(test_path, model_dir, args)
+    inference(test_path, args)
