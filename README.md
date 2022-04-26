@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/57215124/165294435-2c57f143-6630-4e34-8f7d-d4adb6af46b0.png)
+![image](https://user-images.githubusercontent.com/57215124/165294518-9682fa37-d290-4b95-9012-c10d24a9156d.png)
 
 # Implementation
 ### 구현완료
