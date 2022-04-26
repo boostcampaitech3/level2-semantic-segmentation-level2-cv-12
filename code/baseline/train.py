@@ -159,19 +159,6 @@ def validation(epoch, model, data_loader, criterion, device):
 def train(train_path, val_path, args):
     seed_everything(args.seed)
 
-    # saved_dir = args.saved_dir + '/' + args.model +'_'
-    if args.exp_name:
-        exp_name = args.exp_name
-    else:
-        exp_name = f'{args.model}_{args.augmentation}'
-    saved_dir = f'{args.saved_dir}/{exp_name}'
-        
-    saved_dir = make_dir(saved_dir)
-    with open(saved_dir+'/config.txt', mode='w') as f:
-        json.dump(args.__dict__, f, indent=2)
-    with open(saved_dir+'/config.txt', mode='r') as f:
-        config = json.load(f)
-
     # -- settings
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
@@ -231,6 +218,22 @@ def train(train_path, val_path, args):
     )
     scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
 
+
+    # -- config & directory settings
+    if args.exp_name:
+        exp_name = args.exp_name
+    else:
+        exp_name = f'{args.model}_{args.augmentation}'
+    saved_dir = f'{args.saved_dir}/{exp_name}'
+        
+    saved_dir = make_dir(saved_dir)
+    config = args.__dict__.copy()
+    config['augmentation'] = {args.augmentation : train_transform.transform._to_dict()['transforms']}
+    config['model'] = {args.model : model.__str__().split('\n')}
+    with open(saved_dir+'/config.txt', mode='w') as f:
+        json.dump(config, f, indent=2)
+
+    
     # -- wandb setting
     wandb_name = f'{args.user}_{exp_name}'
     wandb.init(entity = 'yolo12', project = 'segmentation', name = wandb_name, config = config)
