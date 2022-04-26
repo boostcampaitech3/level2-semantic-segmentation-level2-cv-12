@@ -137,7 +137,11 @@ def train(train_path, val_path, args):
     seed_everything(args.seed)
     
     # saved_dir = args.saved_dir + '/' + args.model +'_'
-    saved_dir = f'{args.saved_dir}/{args.model}_{args.augmentation}'
+    if args.exp_name:
+        saved_dir = f'{args.saved_dir}/{args.exp_name}'
+    else:
+        saved_dir = f'{args.saved_dir}/{args.model}_{args.augmentation}'
+        
     saved_dir = make_dir(saved_dir)
     with open(saved_dir+'/config.txt', mode='w') as f:
         json.dump(args.__dict__, f, indent=2)
@@ -273,7 +277,7 @@ if __name__ == '__main__':
     parser.add_argument('--criterion', type=str, default='cross_entropy', help='criterion type (default: cross_entropy)')
     parser.add_argument('--lr_decay_step', type=int, default=20, help='learning rate scheduler deacy step (default: 20)')
     parser.add_argument('--log_interval', type=int, default=20, help='how many batches to wait before logging training status')
-    parser.add_argument('--name', default='exp', help='model save at {SM_MODEL_DIR}/{name}')
+    parser.add_argument('--exp_name', default='')
 
     # Container environment
     # parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', '/opt/ml/input/data/train/images'))

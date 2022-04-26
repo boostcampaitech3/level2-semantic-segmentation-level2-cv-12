@@ -55,7 +55,7 @@ class Rotate90:
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
                             # A.Normalize(),
-                            A.RandomRotate90(),
+                            A.RandomRotate90(p=1),
                             ToTensorV2(),
                             ])
 
