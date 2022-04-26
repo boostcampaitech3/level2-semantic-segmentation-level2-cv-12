@@ -23,6 +23,9 @@ from utils import label_accuracy_score, add_hist
 
 import wandb
 
+category_dict = {0:'Background', 1:'General trash', 2:'Paper', 3:'Paper pack', 4:'Metal', 5:'Glass', 
+                  6:'Plastic', 7:'Styrofoam', 8:'Plastic bag', 9:'Battery',10:'Clothing'}
+
 def seed_everything(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -96,7 +99,7 @@ def save_model(model, saved_dir, file_name='fcn_resnet50_best_model(pretrained).
 def validation(epoch, model, data_loader, criterion, device):
     print(f'Start validation #{epoch}')
     model.eval()
-
+    mask_list = []
     with torch.no_grad():
         n_class = 11
         total_loss = 0
@@ -121,6 +124,19 @@ def validation(epoch, model, data_loader, criterion, device):
             outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
             masks = masks.detach().cpu().numpy()
             
+            # wandb image
+            if step % 5 == 0:
+                wandb_media = wandb.Image(images[0], masks={
+                        "predictions" : {
+                            "mask_data" : outputs[0],
+                            "class_labels" : category_dict
+                            },
+                        "ground_truth" : {
+                            "mask_data" : masks[0],
+                            "class_labels" : category_dict}
+                        })
+                mask_list.append(wandb_media)
+            
             hist = add_hist(hist, masks, outputs, n_class=n_class)
         
         acc, acc_cls, mIoU, fwavacc, IoU = label_accuracy_score(hist)
@@ -136,12 +152,13 @@ def validation(epoch, model, data_loader, criterion, device):
                     "val/accuracy": acc,
                     "val/mIoU": mIoU,
                     })
+    wandb.log({"val" : mask_list})
         
     return avrg_loss, round(acc, 4), round(mIoU, 4)
 
 def train(train_path, val_path, args):
     seed_everything(args.seed)
-    
+
     # saved_dir = args.saved_dir + '/' + args.model +'_'
     if args.exp_name:
         exp_name = args.exp_name
@@ -226,6 +243,7 @@ def train(train_path, val_path, args):
         model.train()
         hist = np.zeros((11, 11))
         pbar = tqdm(enumerate(train_loader), total=len(train_loader))
+        mask_list = []
         for step, (images, masks, _) in pbar:
             images = torch.stack(images)       
             masks = torch.stack(masks).long() 
@@ -248,6 +266,19 @@ def train(train_path, val_path, args):
             outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
             masks = masks.detach().cpu().numpy()
             
+            # wandb image
+            if step % 5 == 0:
+                wandb_media = wandb.Image(images[0], masks={
+                        "predictions" : {
+                            "mask_data" : outputs[0],
+                            "class_labels" : category_dict
+                            },
+                        "ground_truth" : {
+                            "mask_data" : masks[0],
+                            "class_labels" : category_dict}
+                        })
+                mask_list.append(wandb_media)
+            
             hist = add_hist(hist, masks, outputs, n_class=11)
             acc, acc_cls, mIoU, fwavacc, IoU = label_accuracy_score(hist)
             
@@ -258,6 +289,7 @@ def train(train_path, val_path, args):
                 wandb.log({ "train/loss": loss.item(), 
                             "train/mIoU": mIoU,
                             })        
+        wandb.log({"train" : mask_list})
         scheduler.step()
 
         # validation 주기에 따른 loss 출력 및 best model 저장
