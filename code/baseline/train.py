@@ -136,7 +136,8 @@ def validation(epoch, model, data_loader, criterion, device):
 def train(train_path, val_path, args):
     seed_everything(args.seed)
     
-    saved_dir = args.saved_dir + '/' + args.model
+    # saved_dir = args.saved_dir + '/' + args.model +'_'
+    saved_dir = f'{args.saved_dir}/{args.model}_{args.augmentation}'
     saved_dir = make_dir(saved_dir)
     with open(saved_dir+'/config.txt', mode='w') as f:
         json.dump(args.__dict__, f, indent=2)
@@ -236,9 +237,6 @@ def train(train_path, val_path, args):
             if step % 25 == 0:
                 pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], \
                         Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
-                # print(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], \
-                #         Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
-            break
         scheduler.step()
 
         # validation 주기에 따른 loss 출력 및 best model 저장

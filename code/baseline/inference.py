@@ -100,14 +100,14 @@ def inference(test_path, args):
 
     print("Calculating inference results..")
 
-    submission = pd.read_csv('/opt/ml/input/code/submission/sample_submission.csv', index_col=None)
+    submission = pd.read_csv('baseline/sample_submission.csv', index_col=None)
 
-    # file_names, preds = test(model, test_loader, device)
-    # for file_name, string in zip(file_names, preds):
-    #     submission = submission.append({
-    #         "image_id" : file_name, 
-    #         "PredictionString" : ' '.join(str(e) for e in string.tolist())
-    #         }, ignore_index=True)
+    file_names, preds = test(model, test_loader, device)
+    for file_name, string in zip(file_names, preds):
+        submission = submission.append({
+            "image_id" : file_name, 
+            "PredictionString" : ' '.join(str(e) for e in string.tolist())
+            }, ignore_index=True)
     submission.to_csv(args.model_path.replace('.pth', '.csv'), index=False)
     print(f'Inference Done!')
 
