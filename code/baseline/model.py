@@ -15,6 +15,20 @@ class BaseModel(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+class BaseModel2(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.model = models.segmentation.fcn_resnet50(pretrained=True)
+
+        # output class를 data set에 맞도록 수정
+        self.model.classifier[4] = nn.Conv2d(512, 11, kernel_size=1)
+        self.model.aux_classifier[4] = nn.Conv2d(256, 11, kernel_size=1)
+
+
+    def forward(self, x):
+        return self.model(x)
+
 class FCNResnet101(nn.Module):
     def __init__(self):
         super().__init__()
