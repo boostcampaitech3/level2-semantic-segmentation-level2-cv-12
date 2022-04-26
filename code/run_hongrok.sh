@@ -1,9 +1,9 @@
 # Training
 # --model과 --augmentation 설정 꼭 확인해주세요!
 # --exp_name에 실험폴더이름을 정할 수 있습니다 / 안적어주시면 $modelClass_$augmenationClass로 폴더생깁니다.
-python baseline/train.py --model BaseModel \
+python baseline/train.py --model BaseModel2 \
                          --augmentation Rotate90 \
-                         --epochs 50 \
+                         --epochs 70 \
                          --lr 1e-4 \
                          --lr_decay_step 15 \
                          --exp_name "" \
