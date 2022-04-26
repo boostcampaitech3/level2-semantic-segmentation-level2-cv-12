@@ -16,7 +16,6 @@ python baseline/train.py --model BaseModel \
 # 가장 최근 저장된 모델 사용하기
 pwd=$(pwd)
 dir=${pwd%/*}/saved
-folder=$dir/$(ls $dir -tr | tail -1)
-pth=$folder/$(ls $folder/*.pth -tr | tail -1)
+pth=$(ls $dir/*/*.pth -tr | tail -1)
 
 python baseline/inference.py --model_path $pth
