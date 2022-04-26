@@ -6,7 +6,8 @@ python baseline/train.py --model BaseModel \
                          --epochs 50 \
                          --lr 1e-4 \
                          --lr_decay_step 15 \
-                         --exp_name ""
+                         --exp_name "" \
+                         --user ksh
 
 # Inference
 # --model_path에 사용하고자하는 pth파일 경로를 설정해주세요

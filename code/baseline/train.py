@@ -21,6 +21,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from utils import label_accuracy_score, add_hist
 
+import wandb
+
 def seed_everything(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -130,6 +132,10 @@ def validation(epoch, model, data_loader, criterion, device):
         print(f'Validation #{epoch}  Average Loss: {round(avrg_loss.item(), 4)}, Accuracy : {round(acc, 4)}, \
                 mIoU: {round(mIoU, 4)}')
         print(f'IoU by class : {IoU_by_class}')
+        wandb.log({ "val/loss": avrg_loss.item(), 
+                    "val/accuracy": acc,
+                    "val/mIoU": mIoU,
+                    })
         
     return avrg_loss, round(acc, 4), round(mIoU, 4)
 
@@ -138,13 +144,16 @@ def train(train_path, val_path, args):
     
     # saved_dir = args.saved_dir + '/' + args.model +'_'
     if args.exp_name:
-        saved_dir = f'{args.saved_dir}/{args.exp_name}'
+        exp_name = args.exp_name
     else:
-        saved_dir = f'{args.saved_dir}/{args.model}_{args.augmentation}'
+        exp_name = f'{args.model}_{args.augmentation}'
+    saved_dir = f'{args.saved_dir}/{exp_name}'
         
     saved_dir = make_dir(saved_dir)
     with open(saved_dir+'/config.txt', mode='w') as f:
         json.dump(args.__dict__, f, indent=2)
+    with open(saved_dir+'/config.txt', mode='r') as f:
+        config = json.load(f)
 
     # -- settings
     use_cuda = torch.cuda.is_available()
@@ -205,6 +214,11 @@ def train(train_path, val_path, args):
     )
     scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
 
+    # -- wandb setting
+    wandb_name = f'{args.user}_{exp_name}'
+    wandb.init(entity = 'yolo12', project = 'segmentation', name = wandb_name, config = config)
+    wandb.watch(model, log=all)
+
     best_loss = 9999999
     best_mIoU = 0
     for epoch in range(args.epochs):
@@ -241,6 +255,9 @@ def train(train_path, val_path, args):
             if step % 25 == 0:
                 pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], \
                         Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                wandb.log({ "train/loss": loss.item(), 
+                            "train/mIoU": mIoU,
+                            })        
         scheduler.step()
 
         # validation 주기에 따른 loss 출력 및 best model 저장
@@ -277,7 +294,7 @@ if __name__ == '__main__':
     parser.add_argument('--criterion', type=str, default='cross_entropy', help='criterion type (default: cross_entropy)')
     parser.add_argument('--lr_decay_step', type=int, default=20, help='learning rate scheduler deacy step (default: 20)')
     parser.add_argument('--log_interval', type=int, default=20, help='how many batches to wait before logging training status')
-    parser.add_argument('--exp_name', default='')
+    parser.add_argument('--exp_name', type=str, default='')
 
     # Container environment
     # parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', '/opt/ml/input/data/train/images'))
@@ -286,6 +303,10 @@ if __name__ == '__main__':
     # segmentation
     parser.add_argument('--saved_dir', type=str, default='../saved')
     parser.add_argument('--dataset_path', type=str, default='/opt/ml/input/data')
+    
+    # wandb
+    parser.add_argument('--user', type=str)    
+    
     args = parser.parse_args()
     print(args)
 
