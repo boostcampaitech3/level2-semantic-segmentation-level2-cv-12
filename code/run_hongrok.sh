@@ -17,6 +17,6 @@ python baseline/train.py --model BaseModel \
 pwd=$(pwd)
 dir=${pwd%/*}/saved
 folder=$dir/$(ls $dir -tr | tail -1)
-pth=$folder/$(ls $folder -tr | tail -1)
+pth=$folder/$(ls $folder/*.pth -tr | tail -1)
 
 python baseline/inference.py --model_path $pth
