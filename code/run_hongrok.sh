@@ -12,4 +12,11 @@ python baseline/train.py --model BaseModel \
 
 # Inference
 # --model_path에 사용하고자하는 pth파일 경로를 설정해주세요
-# python baseline/inference.py --model_path /opt/ml/input/level2-semantic-segmentation-level2-cv-12/saved/BaseModel_BaseAugmentation/epoch0001_mIoU03327.pth
+
+# 가장 최근 저장된 모델 사용하기
+pwd=$(pwd)
+dir=${pwd%/*}/saved
+folder=$dir/$(ls $dir -tr | tail -1)
+pth=$folder/$(ls $folder -tr | tail -1)
+
+python baseline/inference.py --model_path $pth
