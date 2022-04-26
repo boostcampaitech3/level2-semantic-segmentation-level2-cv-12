@@ -15,6 +15,41 @@ class BaseModel(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+class FCNResnet101(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.model = models.segmentation.fcn_resnet101(pretrained=True)
+    
+        # output class를 data set에 맞도록 수정
+        self.model.classifier[4] = nn.Conv2d(512, 11, kernel_size=1)
+
+    def forward(self, x):
+        return self.model(x)
+
+class Deeplabv3_Resnet50(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.model = models.segmentation.deeplabv3_resnet50(pretrained=True)
+
+        # output class를 data set에 맞도록 수정
+        self.model.classifier[4] = nn.Conv2d(256, 11, kernel_size=1)
+
+    def forward(self, x):
+        return self.model(x)
+
+class Deeplabv3_Resnet101(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.model = models.segmentation.deeplabv3_resnet101(pretrained=True)
+
+        # output class를 data set에 맞도록 수정
+        self.model.classifier[4] = nn.Conv2d(256, 11, kernel_size=1)
+  
+    def forward(self, x):
+        return self.model(x)
 
 # Custom Model Template
 class MyModel(nn.Module):
