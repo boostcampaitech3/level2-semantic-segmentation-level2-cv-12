@@ -36,42 +36,6 @@ def seed_everything(seed):
     random.seed(seed)
 
 
-def get_lr(optimizer):
-    for param_group in optimizer.param_groups:
-        return param_group['lr']
-
-
-# def grid_image(np_images, gts, preds, n=16, shuffle=False):
-#     batch_size = np_images.shape[0]
-#     assert n <= batch_size
-
-#     choices = random.choices(range(batch_size), k=n) if shuffle else list(range(n))
-#     figure = plt.figure(figsize=(12, 18 + 2))  # cautions: hardcoded, 이미지 크기에 따라 figsize 를 조정해야 할 수 있습니다. T.T
-#     plt.subplots_adjust(top=0.8)               # cautions: hardcoded, 이미지 크기에 따라 top 를 조정해야 할 수 있습니다. T.T
-#     n_grid = np.ceil(n ** 0.5)
-#     tasks = ["mask", "gender", "age"]
-#     for idx, choice in enumerate(choices):
-#         gt = gts[choice].item()
-#         pred = preds[choice].item()
-#         image = np_images[choice]
-#         # title = f"gt: {gt}, pred: {pred}"
-#         gt_decoded_labels = MaskBaseDataset.decode_multi_class(gt)
-#         pred_decoded_labels = MaskBaseDataset.decode_multi_class(pred)
-#         title = "\n".join([
-#             f"{task} - gt: {gt_label}, pred: {pred_label}"
-#             for gt_label, pred_label, task
-#             in zip(gt_decoded_labels, pred_decoded_labels, tasks)
-#         ])
-
-#         plt.subplot(n_grid, n_grid, idx + 1, title=title)
-#         plt.xticks([])
-#         plt.yticks([])
-#         plt.grid(False)
-#         plt.imshow(image, cmap=plt.cm.binary)
-
-#     return figure
-
-
 def collate_fn(batch):
     return tuple(zip(*batch))
 
@@ -296,8 +260,7 @@ def train(train_path, val_path, args):
             
             # step 주기에 따른 loss 출력
             if step % 25 == 0:
-                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], \
-                        Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {scheduler.get_last_lr()}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
                 wandb.log({ "train/loss": loss.item(), 
                             "train/mIoU": mIoU,
                             })        
