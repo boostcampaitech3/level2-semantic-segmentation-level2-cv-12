@@ -195,12 +195,14 @@ def train(train_path, val_path, args):
                                             batch_size=args.batch_size,
                                             shuffle=True,
                                             num_workers=4,
+                                            drop_last=True,
                                             collate_fn=collate_fn)
 
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset, 
                                             batch_size=args.batch_size,
                                             shuffle=False,
                                             num_workers=4,
+                                            drop_last=True,
                                             collate_fn=collate_fn)
 
     # -- model
