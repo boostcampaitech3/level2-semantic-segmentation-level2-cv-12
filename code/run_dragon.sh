@@ -6,7 +6,7 @@ python baseline/train.py --model BaseModel \
                          --epochs 50 \
                          --lr 1e-4 \
                          --lr_decay_step 15 \
-                         --exp_name "" \
+                         --exp_name "drgon_DeconvNet_VGG16" \
                          --user dragon
 
 # Inference
