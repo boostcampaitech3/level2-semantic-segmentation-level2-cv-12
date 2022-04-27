@@ -26,7 +26,10 @@ def test(model, data_loader, device):
         for step, (imgs, image_infos) in enumerate(tqdm(data_loader)):
             
             # inference (512 x 512)
-            outs = model(torch.stack(imgs).to(device))['out']
+            if args.model in ['BaseModel', 'BaseModel2', 'FCNResnet101', 'Deeplabv3_Resnet50', 'Deeplabv3_Resnet101']:
+                outs = model(torch.stack(imgs).to(device))['out']
+            else:
+                outs = model(torch.stack(imgs).to(device))
             oms = torch.argmax(outs.squeeze(), dim=1).detach().cpu().numpy()
             
             # resize (256 x 256)
@@ -108,7 +111,10 @@ def inference(test_path, args):
             "image_id" : file_name, 
             "PredictionString" : ' '.join(str(e) for e in string.tolist())
             }, ignore_index=True)
-    submission.to_csv(args.model_path.replace('.pth', '.csv'), index=False)
+    csv_path = args.model_path.split('/')
+    csv_path[-1] = f'{csv_path[-2]}_{csv_path[-1]}'.replace('.pth', '.csv')
+    csv_path = '/'.join(csv_path)
+    submission.to_csv(csv_path, index=False)
     print(f'Inference Done!')
 
 

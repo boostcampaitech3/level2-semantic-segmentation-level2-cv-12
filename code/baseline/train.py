@@ -36,42 +36,6 @@ def seed_everything(seed):
     random.seed(seed)
 
 
-def get_lr(optimizer):
-    for param_group in optimizer.param_groups:
-        return param_group['lr']
-
-
-# def grid_image(np_images, gts, preds, n=16, shuffle=False):
-#     batch_size = np_images.shape[0]
-#     assert n <= batch_size
-
-#     choices = random.choices(range(batch_size), k=n) if shuffle else list(range(n))
-#     figure = plt.figure(figsize=(12, 18 + 2))  # cautions: hardcoded, 이미지 크기에 따라 figsize 를 조정해야 할 수 있습니다. T.T
-#     plt.subplots_adjust(top=0.8)               # cautions: hardcoded, 이미지 크기에 따라 top 를 조정해야 할 수 있습니다. T.T
-#     n_grid = np.ceil(n ** 0.5)
-#     tasks = ["mask", "gender", "age"]
-#     for idx, choice in enumerate(choices):
-#         gt = gts[choice].item()
-#         pred = preds[choice].item()
-#         image = np_images[choice]
-#         # title = f"gt: {gt}, pred: {pred}"
-#         gt_decoded_labels = MaskBaseDataset.decode_multi_class(gt)
-#         pred_decoded_labels = MaskBaseDataset.decode_multi_class(pred)
-#         title = "\n".join([
-#             f"{task} - gt: {gt_label}, pred: {pred_label}"
-#             for gt_label, pred_label, task
-#             in zip(gt_decoded_labels, pred_decoded_labels, tasks)
-#         ])
-
-#         plt.subplot(n_grid, n_grid, idx + 1, title=title)
-#         plt.xticks([])
-#         plt.yticks([])
-#         plt.grid(False)
-#         plt.imshow(image, cmap=plt.cm.binary)
-
-#     return figure
-
-
 def collate_fn(batch):
     return tuple(zip(*batch))
 
@@ -152,12 +116,16 @@ def validation(epoch, model, data_loader, criterion, device):
         print(f'Validation #{epoch}  Average Loss: {round(avrg_loss.item(), 4)}, Accuracy : {round(acc, 4)}, \
                 mIoU: {round(mIoU, 4)}')
         print(f'IoU by class : {IoU_by_class}')
+        for _dict in IoU_by_class:
+            wandb.log({f'class/{k}_mIoU' : v for k, v in _dict.items()})
+
         wandb.log({ "val/loss": avrg_loss.item(), 
                     "val/accuracy": acc,
                     "val/mIoU": mIoU,
                     })
+
     wandb.log({"val" : mask_list})
-        
+
     return avrg_loss, round(acc, 4), round(mIoU, 4)
 
 def train(train_path, val_path, args):
@@ -203,7 +171,7 @@ def train(train_path, val_path, args):
                                             collate_fn=collate_fn)
 
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset, 
-                                            batch_size=args.batch_size,
+                                            batch_size=4,
                                             shuffle=False,
                                             num_workers=4,
                                             drop_last=True,
@@ -236,7 +204,7 @@ def train(train_path, val_path, args):
     config = args.__dict__.copy()
     config['augmentation'] = {args.augmentation : train_transform.transform._to_dict()['transforms']}
     config['model'] = {args.model : model.__str__().split('\n')}
-    with open(saved_dir+'/config.txt', mode='w') as f:
+    with open(f'{saved_dir}/{exp_name}_config.txt', mode='w') as f:
         json.dump(config, f, indent=2)
 
     
@@ -296,8 +264,7 @@ def train(train_path, val_path, args):
             
             # step 주기에 따른 loss 출력
             if step % 25 == 0:
-                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], \
-                        Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {scheduler.get_last_lr()[0]}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
                 wandb.log({ "train/loss": loss.item(), 
                             "train/mIoU": mIoU,
                             })        
@@ -330,7 +297,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=20, help='number of epochs to train (default: 1)')
     parser.add_argument('--dataset', type=str, default='BaseDataset', help='dataset augmentation type (default: BaseDataset)')
     parser.add_argument('--augmentation', type=str, default='BaseAugmentation', help='data augmentation type (default: BaseAugmentation)')
-    parser.add_argument("--resize", nargs="+", type=list, default=[512, 512], help='resize size for image when training')
+    parser.add_argument("--resize", type=eval, default='[512, 512]', help='resize size for image when training')
     parser.add_argument('--batch_size', type=int, default=16, help='input batch size for training (default: 64)')
     parser.add_argument('--model', type=str, default='BaseModel', help='model type (default: BaseModel)')
     parser.add_argument('--optimizer', type=str, default='Adam')
