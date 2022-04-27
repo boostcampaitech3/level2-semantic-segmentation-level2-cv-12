@@ -116,12 +116,16 @@ def validation(epoch, model, data_loader, criterion, device):
         print(f'Validation #{epoch}  Average Loss: {round(avrg_loss.item(), 4)}, Accuracy : {round(acc, 4)}, \
                 mIoU: {round(mIoU, 4)}')
         print(f'IoU by class : {IoU_by_class}')
+        for _dict in IoU_by_class:
+            wandb.log({f'class/{k}_mIoU' : v for k, v in _dict.items()})
+
         wandb.log({ "val/loss": avrg_loss.item(), 
                     "val/accuracy": acc,
                     "val/mIoU": mIoU,
                     })
+
     wandb.log({"val" : mask_list})
-        
+
     return avrg_loss, round(acc, 4), round(mIoU, 4)
 
 def train(train_path, val_path, args):
@@ -260,7 +264,7 @@ def train(train_path, val_path, args):
             
             # step 주기에 따른 loss 출력
             if step % 25 == 0:
-                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {scheduler.get_last_lr()}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {scheduler.get_last_lr()[0]}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
                 wandb.log({ "train/loss": loss.item(), 
                             "train/mIoU": mIoU,
                             })        
