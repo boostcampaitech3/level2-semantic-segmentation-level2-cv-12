@@ -127,3 +127,18 @@ class BaseDataset(Dataset):
             if cats[i]['id']==classID:
                 return cats[i]['name']
         return "None"
+
+
+class Rch_augmentation:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            # A.Resize(resize[0], resize[1]),
+                            # A.Normalize(),
+                            A.RandomRotate90(p=1),
+                            A.RandomBrightnessContrast(p=0.4),
+                            A.HueSaturationValue(hue_shift_limit=23, sat_shift_limit=30, val_shift_limit=25, p=0.4),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
