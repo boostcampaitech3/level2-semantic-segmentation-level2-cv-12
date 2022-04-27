@@ -63,3 +63,6 @@ python inference.py --model $modelClass
                     --batch_size $batch_size
                     --model_path $model_path
 ```
+
+## model test 작성방법
+ - model test 경우에는 |   | 사이를 채워주시면 표 형태로 작성이 됩니다
