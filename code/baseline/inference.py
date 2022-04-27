@@ -26,7 +26,10 @@ def test(model, data_loader, device):
         for step, (imgs, image_infos) in enumerate(tqdm(data_loader)):
             
             # inference (512 x 512)
-            outs = model(torch.stack(imgs).to(device))['out']
+            if args.model in ['BaseModel', 'BaseModel2', 'FCNResnet101', 'Deeplabv3_Resnet50', 'Deeplabv3_Resnet101']:
+                outs = model(torch.stack(imgs).to(device))['out']
+            else:
+                outs = model(torch.stack(imgs).to(device))
             oms = torch.argmax(outs.squeeze(), dim=1).detach().cpu().numpy()
             
             # resize (256 x 256)
