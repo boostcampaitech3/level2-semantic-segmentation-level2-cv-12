@@ -200,7 +200,7 @@ def train(train_path, val_path, args):
     config = args.__dict__.copy()
     config['augmentation'] = {args.augmentation : train_transform.transform._to_dict()['transforms']}
     config['model'] = {args.model : model.__str__().split('\n')}
-    with open('{saved_dir}/{exp_name}_config.txt', mode='w') as f:
+    with open(f'{saved_dir}/{exp_name}_config.txt', mode='w') as f:
         json.dump(config, f, indent=2)
 
     
