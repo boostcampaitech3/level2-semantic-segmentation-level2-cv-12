@@ -206,7 +206,7 @@ class DeconvNet_VGG16(nn.Module):
 
 class FCN8_VGG16(nn.Module):
     def __init__(self, num_classes=12):
-            super(FCN8_Resnet101, self).__init__()
+            super(FCN8_VGG16, self).__init__()
             
             def CBR(in_channels, out_channels, kernel_size=3, stride=1, padding=1):
                 return nn.Sequential(nn.Conv2d(in_channels=in_channels, 
