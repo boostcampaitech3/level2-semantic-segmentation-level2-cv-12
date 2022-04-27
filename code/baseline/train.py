@@ -116,7 +116,11 @@ def validation(epoch, model, data_loader, criterion, device):
             # device 할당
             model = model.to(device)
             
-            outputs = model(images)['out']
+            if args.model in ['BaseModel', 'BaseModel2', 'FCNResnet101', 'Deeplabv3_Resnet50', 'Deeplabv3_Resnet101']:
+                outputs = model(images)['out']
+            else:
+                outputs = model(images)
+
             loss = criterion(outputs, masks)
             total_loss += loss
             cnt += 1
@@ -260,7 +264,10 @@ def train(train_path, val_path, args):
             model = model.to(device)
             
             # inference
-            outputs = model(images)['out']
+            if args.model in ['BaseModel', 'BaseModel2', 'FCNResnet101', 'Deeplabv3_Resnet50', 'Deeplabv3_Resnet101']:
+                outputs = model(images)['out']
+            else:
+                outputs = model(images)
             
             # loss 계산 (cross entropy loss)
             loss = criterion(outputs, masks)
