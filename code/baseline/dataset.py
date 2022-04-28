@@ -16,18 +16,17 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 
-
-
 class TestAugmentation: ## testset용
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
+                            A.Normalize(max_pixel_value=1),
                             ToTensorV2(),
                             ])
 
     def __call__(self, image):
         return self.transform(image=image)
+
 
 class ValAugmentation(TestAugmentation): ## valset용 // TestAugmentation에서 적용한 transform 똑같이 적용됩니다.
     def __init__(self, resize, **args):
@@ -41,7 +40,7 @@ class BaseAugmentation:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
+                            A.Normalize(max_pixel_value=1),
                             ToTensorV2(),
                             ])
 
@@ -53,9 +52,21 @@ class BaseAugmentation:
 class Rotate90:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
-                            # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
+                            A.Normalize(max_pixel_value=1),
                             A.RandomRotate90(p=1),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
+
+
+class Rotate90_Resize:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            A.Normalize(max_pixel_value=1),
+                            A.RandomRotate90(p=0.6),
+                            A.Resize(resize[0], resize[1]),
                             ToTensorV2(),
                             ])
 
@@ -67,10 +78,10 @@ class Rch_augmentation:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
                             A.RandomRotate90(p=1),
                             A.RandomBrightnessContrast(p=0.4),
                             A.HueSaturationValue(hue_shift_limit=23, sat_shift_limit=30, val_shift_limit=25, p=0.4),
+                            A.Normalize(max_pixel_value=1),
                             ToTensorV2(),
                             ])
 
