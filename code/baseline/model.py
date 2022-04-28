@@ -328,95 +328,89 @@ class DeconvNet_VGG16(nn.Module):
 
 class FCN8_VGG16(nn.Module):
     def __init__(self, num_classes=12):
-            super(FCN8_VGG16, self).__init__()
-            
-            def CBR(in_channels, out_channels, kernel_size=3, stride=1, padding=1):
-                return nn.Sequential(nn.Conv2d(in_channels=in_channels, 
-                                                out_channels=out_channels,
-                                                kernel_size=kernel_size,
-                                                stride=stride, 
-                                                padding=padding),
-                                    nn.ReLU(inplace=True)
-                                    )        
-            
-            # conv1
-            self.conv1_1 = CBR(3, 64, 3, 1, 1)
-            self.conv1_2 = CBR(64, 64, 3, 1, 1)
-            self.pool1 = nn.MaxPool2d(2, stride=2, ceil_mode=True) 
-            
-            # conv2
-            self.conv2_1 = CBR(64, 128, 3, 1, 1)
-            self.conv2_2 = CBR(128, 128, 3, 1, 1)  
-            self.pool2 = nn.MaxPool2d(2, stride=2, ceil_mode=True) 
-
-            # conv3
-            self.conv3_1 = CBR(128, 256, 3, 1, 1)
-            self.conv3_2 = CBR(256, 256, 3, 1, 1)
-            self.conv3_3 = CBR(256, 256, 3, 1, 1)          
-            self.pool3 = nn.MaxPool2d(2, stride=2, ceil_mode=True) 
-
-            # Score pool3
-            self.score_pool3_fr = nn.Conv2d(256,
-                                            num_classes, 
-                                            kernel_size=1,
-                                            stride=1,
-                                            padding=0)             
-            
-            # conv4
-            self.conv4_1 = CBR(256, 512, 3, 1, 1)
-            self.conv4_2 = CBR(512, 512, 3, 1, 1)
-            self.conv4_3 = CBR(512, 512, 3, 1, 1)          
-            self.pool4 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
-
-            # Score pool4
-            self.score_pool4_fr = nn.Conv2d(512,
-                                            num_classes, 
-                                            kernel_size=1,
-                                            stride=1,
-                                            padding=0)        
-            
-            # conv5
-            self.conv5_1 = CBR(512, 512, 3, 1, 1)
-            self.conv5_2 = CBR(512, 512, 3, 1, 1)
-            self.conv5_3 = CBR(512, 512, 3, 1, 1)
-            self.pool5 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
+        super(FCN8_VGG16, self).__init__()
         
-            # fc6
-            self.fc6 = nn.Conv2d(512, 4096, 1)
-            self.relu6 = nn.ReLU(inplace=True)
-            self.drop6 = nn.Dropout2d()
+        def CBR(in_channels, out_channels, kernel_size=3, stride=1, padding=1):
+            return nn.Sequential(nn.Conv2d(in_channels=in_channels, 
+                                            out_channels=out_channels,
+                                            kernel_size=kernel_size,
+                                            stride=stride, 
+                                            padding=padding),
+                                nn.ReLU(inplace=True)
+                                )        
+        
+        # conv1
+        self.conv1_1 = CBR(3, 64, 3, 1, 1)
+        self.conv1_2 = CBR(64, 64, 3, 1, 1)
+        self.pool1 = nn.MaxPool2d(2, stride=2, ceil_mode=True) 
+        
+        # conv2
+        self.conv2_1 = CBR(64, 128, 3, 1, 1)
+        self.conv2_2 = CBR(128, 128, 3, 1, 1)  
+        self.pool2 = nn.MaxPool2d(2, stride=2, ceil_mode=True) 
 
-            # fc7
-            self.fc7 = nn.Conv2d(4096, 4096, 1)
-            self.relu7 = nn.ReLU(inplace=True)
-            self.drop7 = nn.Dropout2d()
-
-
-            # Score
-            self.score_fr = nn.Conv2d(4096, num_classes, kernel_size = 1)
+        # conv3
+        self.conv3_1 = CBR(128, 256, 3, 1, 1)
+        self.conv3_2 = CBR(256, 256, 3, 1, 1)
+        self.conv3_3 = CBR(256, 256, 3, 1, 1)          
+        self.pool3 = nn.MaxPool2d(2, stride=2, ceil_mode=True) 
+        # Score pool3
+        self.score_pool3_fr = nn.Conv2d(256,
+                                        num_classes, 
+                                        kernel_size=1,
+                                        stride=1,
+                                        padding=0)             
             
+        # conv4
+        self.conv4_1 = CBR(256, 512, 3, 1, 1)
+        self.conv4_2 = CBR(512, 512, 3, 1, 1)
+        self.conv4_3 = CBR(512, 512, 3, 1, 1)          
+        self.pool4 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
+        # Score pool4
+        self.score_pool4_fr = nn.Conv2d(512,
+                                        num_classes, 
+                                        kernel_size=1,
+                                        stride=1,
+                                        padding=0)        
             
-            # UpScore2 using deconv
-            self.upscore2 = nn.ConvTranspose2d(num_classes,
-                                            num_classes,
-                                            kernel_size=4,
-                                            stride=2,
-                                            padding=1)
-            
-            # UpScore2_pool4 using deconv
-            self.upscore2_pool4 = nn.ConvTranspose2d(num_classes, 
-                                                    num_classes, 
-                                                    kernel_size=4,
-                                                    stride=2,
-                                                    padding=1)
-            
-            # UpScore8 using deconv
-            self.upscore8 = nn.ConvTranspose2d(num_classes, 
-                                            num_classes,
-                                            kernel_size=16,
-                                            stride=8,
-                                            padding=4)
-
+        # conv5
+        self.conv5_1 = CBR(512, 512, 3, 1, 1)
+        self.conv5_2 = CBR(512, 512, 3, 1, 1)
+        self.conv5_3 = CBR(512, 512, 3, 1, 1)
+        self.pool5 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
+    
+        # fc6
+        self.fc6 = nn.Conv2d(512, 4096, 1)
+        self.relu6 = nn.ReLU(inplace=True)
+        self.drop6 = nn.Dropout2d()
+        # fc7
+        self.fc7 = nn.Conv2d(4096, 4096, 1)
+        self.relu7 = nn.ReLU(inplace=True)
+        self.drop7 = nn.Dropout2d()
+        # Score
+        self.score_fr = nn.Conv2d(4096, num_classes, kernel_size = 1)
+        
+        
+        # UpScore2 using deconv
+        self.upscore2 = nn.ConvTranspose2d(num_classes,
+                                        num_classes,
+                                        kernel_size=4,
+                                        stride=2,
+                                        padding=1)
+        
+        # UpScore2_pool4 using deconv
+        self.upscore2_pool4 = nn.ConvTranspose2d(num_classes, 
+                                                num_classes, 
+                                                kernel_size=4,
+                                                stride=2,
+                                                padding=1)
+        
+        # UpScore8 using deconv
+        self.upscore8 = nn.ConvTranspose2d(num_classes, 
+                                        num_classes,
+                                        kernel_size=16,
+                                        stride=8,
+                                        padding=4)
 
     def forward(self, x):
         h = self.conv1_1(x)
@@ -470,6 +464,108 @@ class FCN8_VGG16(nn.Module):
         upscore8 = self.upscore8(h)
         
         return upscore8
+    
+class UNet(nn.Module):
+    def __init__(self, num_classes=11):
+        super(UNet, self).__init__()
+        def encoder(in_channels,out_channels,kernel_size,stride,padding,bias):
+            return nn.Sequential(
+                nn.Conv2d(in_channels=in_channels,
+                        out_channels=out_channels,
+                        kernel_size=kernel_size,
+                        stride=stride,
+                        padding=padding,
+                        bias=bias
+                        ),
+                nn.BatchNorm2d(out_channels),
+                nn.ReLU()
+            )
+
+        def decoder(in_channels,out_channels,kernel_size,stride,padding,bias):
+            return nn.Sequential(
+                nn.ConvTranspose2d(in_channels,out_channels,kernel_size=kernel_size,stride=stride,padding=padding,bias=bias)
+            )
+
+        self.conv1_1 = encoder(3,64,3,1,1,True)
+        self.conv1_2 = encoder(64,64,3,1,1,True)
+        self.pool1 = nn.MaxPool2d(kernel_size=2)
+
+        self.conv2_1 = encoder(64,128,3,1,1,True)
+        self.conv2_2 = encoder(128,128,3,1,1,True)
+        self.pool2 = nn.MaxPool2d(kernel_size=2)
+
+        self.conv3_1 = encoder(128,256,3,1,1,True)
+        self.conv3_2 = encoder(256,256,3,1,1,True)
+        self.pool3 = nn.MaxPool2d(kernel_size=2)
+        
+        self.conv4_1 = encoder(256,512,3,1,1,True)
+        self.conv4_2 = encoder(512,512,3,1,1,True)
+        self.pool4 = nn.MaxPool2d(kernel_size=2)
+
+        self.conv5_1 = encoder(512,1024,3,1,1,True)
+        self.conv5_2 = encoder(1024,1024,3,1,1,True)
+
+        self.unpool4 = decoder(1024,512,2,2,0,True)
+        self.deconv4_2 = encoder(1024,512,3,1,1,True)
+        self.deconv4_1 = encoder(512,512,3,1,1,True)
+        
+        self.unpool3 = decoder(512,256,2,2,0,True)
+        self.deconv3_2 = encoder(512,256,3,1,1,True)
+        self.deconv3_1 = encoder(256,256,3,1,1,True)
+
+        self.unpool2 = decoder(256,128,2,2,0,True)
+        self.deconv2_2 = encoder(256,128,3,1,1,True)
+        self.deconv2_1 = encoder(128,128,3,1,1,True)
+
+        self.unpool1 = decoder(128,64,2,2,0,True)
+        self.deconv1_2 = encoder(128,64,3,1,1,True)
+        self.deconv1_1 = encoder(64,64,3,1,1,True)
+        #output samentic map
+        self.score_fr = nn.Conv2d(in_channels=64,out_channels=num_classes,kernel_size=1,stride=1,padding=0,bias=True)
+        
+    def forward(self, x):
+        conv1_1 = self.conv1_1(x)
+        conv1_2 = self.conv1_2(conv1_1)
+        pool1 = self.pool1(conv1_2)
+
+        conv2_1 = self.conv2_1(pool1)
+        conv2_2 = self.conv2_2(conv2_1)
+        pool2 = self.pool2(conv2_2)
+
+        conv3_1 = self.conv3_1(pool2)
+        conv3_2 = self.conv3_2(conv3_1)
+        pool3 = self.pool3(conv3_2)
+
+        conv4_1 = self.conv4_1(pool3)
+        conv4_2 = self.conv4_2(conv4_1)
+        pool4 = self.pool4(conv4_2)
+
+        conv5_1 = self.conv5_1(pool4)
+        conv5_2 = self.conv5_2(conv5_1)
+        
+        unpool4 = self.unpool4(conv5_2)
+        
+        upsample4 = torch.cat((unpool4,conv4_2),dim=1)
+        
+        deconv4_2 = self.deconv4_2(upsample4)
+        deconv4_1 = self.deconv4_1(deconv4_2)
+
+        unpool3 = self.unpool3(deconv4_1)
+        upsample3 = torch.cat((unpool3,conv3_2),dim=1)
+        deconv3_2 = self.deconv3_2(upsample3)
+        deconv3_1 = self.deconv3_1(deconv3_2)
+
+        unpool2 = self.unpool2(deconv3_1)
+        upsample2 = torch.cat((unpool2,conv2_2),dim=1)
+        deconv2_2 = self.deconv2_2(upsample2)
+        deconv2_1 = self.deconv2_1(deconv2_2)
+
+        unpool1 = self.unpool1(deconv2_1)
+        upsample1 = torch.cat((unpool1,conv1_2),dim=1)
+        deconv1_2 = self.deconv1_2(upsample1)
+        deconv1_1 = self.deconv1_1(deconv1_2)
+        
+        return  self.score_fr(deconv1_1)
 
 # Custom Model Template
 class MyModel(nn.Module):

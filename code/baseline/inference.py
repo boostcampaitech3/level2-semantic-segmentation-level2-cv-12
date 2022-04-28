@@ -111,7 +111,10 @@ def inference(test_path, args):
             "image_id" : file_name, 
             "PredictionString" : ' '.join(str(e) for e in string.tolist())
             }, ignore_index=True)
-    submission.to_csv(args.model_path.replace('.pth', '.csv'), index=False)
+    csv_path = args.model_path.split('/')
+    csv_path[-1] = f'{csv_path[-2]}_{csv_path[-1]}'.replace('.pth', '.csv')
+    csv_path = '/'.join(csv_path)
+    submission.to_csv(csv_path, index=False)
     print(f'Inference Done!')
 
 
