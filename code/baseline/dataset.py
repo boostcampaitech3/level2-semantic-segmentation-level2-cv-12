@@ -20,7 +20,7 @@ class TestAugmentation: ## testset용
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(),
                             ToTensorV2(),
                             ])
 
@@ -40,7 +40,7 @@ class BaseAugmentation:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(),
                             ToTensorV2(),
                             ])
 
@@ -52,7 +52,7 @@ class BaseAugmentation:
 class Rotate90:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(),
                             A.RandomRotate90(p=1),
                             ToTensorV2(),
                             ])
@@ -64,7 +64,7 @@ class Rotate90:
 class Rotate90_Resize:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(),
                             A.RandomRotate90(p=0.6),
                             A.Resize(resize[0], resize[1]),
                             ToTensorV2(),
@@ -81,7 +81,7 @@ class Rch_augmentation:
                             A.RandomRotate90(p=1),
                             A.RandomBrightnessContrast(p=0.4),
                             A.HueSaturationValue(hue_shift_limit=23, sat_shift_limit=30, val_shift_limit=25, p=0.4),
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(),
                             ToTensorV2(),
                             ])
 
@@ -95,7 +95,7 @@ class Hori_Ro_Bri_Hue:
                             A.RandomRotate90(),
                             A.RandomBrightnessContrast(),
                             A.HueSaturationValue(hue_shift_limit=15, sat_shift_limit=20, val_shift_limit=23, p=0.4),
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(),
                             ToTensorV2(),
                             ])
 
@@ -118,7 +118,7 @@ class jina_aug:
                                 A.GaussianBlur(p=1),
                                 A.GaussNoise(p=1)
                             ], p=0.3),
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(),
                             ToTensorV2(),
                             ])
 
