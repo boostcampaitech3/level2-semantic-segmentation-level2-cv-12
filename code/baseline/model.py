@@ -153,6 +153,23 @@ class UnetPlusPlus_Efficient7(nn.Module):
     def forward(self, x):
         return self.model(x)    
 
+class UnetPlusPlus_Efficient5_N(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        encoder_name = "timm-efficientnet-b5"   # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        self.model = smp.UnetPlusPlus(     # choose architecture
+            encoder_name=encoder_name, 
+            encoder_weights="noisy-student",     
+            in_channels=3,       
+            classes=11,              
+        )
+
+        self.preprocess_input = get_preprocessing_fn(encoder_name, pretrained='noisy-student')
+    
+    def forward(self, x):
+        return self.model(x)    
+
 class Deeplabv3Plus_Resnet101(nn.Module):
     def __init__(self):
         super().__init__()
