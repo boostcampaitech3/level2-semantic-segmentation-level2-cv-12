@@ -95,6 +95,30 @@ class Hori_Ro_Bri_Hue:
                             A.RandomRotate90(),
                             A.RandomBrightnessContrast(),
                             A.HueSaturationValue(hue_shift_limit=15, sat_shift_limit=20, val_shift_limit=23, p=0.4),
+                            A.Normalize(max_pixel_value=1),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
+
+class jina_aug:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            A.HorizontalFlip(),
+                            A.RandomRotate90(),
+                            A.RandomResizedCrop(height=512, width=512, scale=(0.6, 0.9),p=0.2),
+                            A.OneOf([
+                                A.RandomBrightnessContrast(p=1),
+                                A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=20, val_shift_limit=23, p=1),
+                                A.RGBShift(p=1),
+                            ], p=0.3),
+                            A.OneOf([
+                                A.Blur(p=1),
+                                A.GaussianBlur(p=1),
+                                A.GaussNoise(p=1)
+                            ], p=0.3),
+                            A.Normalize(max_pixel_value=1),
                             ToTensorV2(),
                             ])
 
