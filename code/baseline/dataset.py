@@ -88,6 +88,18 @@ class Rch_augmentation:
     def __call__(self, image, mask):
         return self.transform(image=image, mask=mask)
 
+class Hori_Ro_Bri_Hue:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            A.HorizontalFlip(),
+                            A.RandomRotate90(),
+                            A.RandomBrightnessContrast(),
+                            A.HueSaturationValue(hue_shift_limit=15, sat_shift_limit=20, val_shift_limit=23, p=0.4),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
 
 class BaseDataset(Dataset):
     """COCO format"""
@@ -153,5 +165,4 @@ class BaseDataset(Dataset):
             if cats[i]['id']==classID:
                 return cats[i]['name']
         return "None"
-
 
