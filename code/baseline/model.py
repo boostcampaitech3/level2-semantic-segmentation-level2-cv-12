@@ -157,6 +157,40 @@ class UnetPlusPlus_Efficient4(nn.Module):
     
     def forward(self, x):
         return self.model(x)
+    
+class UnetPlusPlus_Efficient7(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        encoder_name = "efficientnet-b7"   # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        self.model = smp.UnetPlusPlus(     # choose architecture
+            encoder_name=encoder_name, 
+            encoder_weights="imagenet",     
+            in_channels=3,       
+            classes=11,              
+        )
+
+        self.preprocess_input = get_preprocessing_fn(encoder_name, pretrained='imagenet')
+    
+    def forward(self, x):
+        return self.model(x)    
+
+class UnetPlusPlus_Efficient5_N(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        encoder_name = "timm-efficientnet-b5"   # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        self.model = smp.UnetPlusPlus(     # choose architecture
+            encoder_name=encoder_name, 
+            encoder_weights="noisy-student",     
+            in_channels=3,       
+            classes=11,              
+        )
+
+        self.preprocess_input = get_preprocessing_fn(encoder_name, pretrained='noisy-student')
+    
+    def forward(self, x):
+        return self.model(x)    
 
 class UnetPlusPlus_Efficient_b5(nn.Module):
     def __init__(self):
@@ -232,6 +266,40 @@ class Deeplabv3Plus_Resnext101(nn.Module):
         
         encoder_name = "resnext101_32x8d"         # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
         self.model = smp.DeepLabV3Plus(    # choose architecture
+            encoder_name=encoder_name,  
+            encoder_weights="imagenet",    
+            in_channels=3,                
+            classes=11,                    
+        )
+
+        self.preprocess_input = get_preprocessing_fn(encoder_name, pretrained='imagenet')
+    
+    def forward(self, x):
+        return self.model(x)
+
+class Deeplabv3Plus_SEResnet152(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        encoder_name = "se_resnet152"         # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        self.model = smp.DeepLabV3Plus(    # choose architecture
+            encoder_name=encoder_name,  
+            encoder_weights="imagenet",    
+            in_channels=3,                
+            classes=11,                    
+        )
+
+        self.preprocess_input = get_preprocessing_fn(encoder_name, pretrained='imagenet')
+    
+    def forward(self, x):
+        return self.model(x)
+
+class UNetPlusPlus_HRNet30(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        encoder_name = "tu-hrnet_w30"         # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        self.model = smp.UnetPlusPlus(    # choosqe architecture
             encoder_name=encoder_name,  
             encoder_weights="imagenet",    
             in_channels=3,                

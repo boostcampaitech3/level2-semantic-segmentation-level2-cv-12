@@ -118,7 +118,6 @@ def validation(epoch, model, data_loader, criterion, device):
         print(f'IoU by class : {IoU_by_class}')
         for _dict in IoU_by_class:
             wandb.log({f'class/{k}_mIoU' : v for k, v in _dict.items()})
-
         wandb.log({ "val/loss": avrg_loss.item(), 
                     "val/accuracy": acc,
                     "val/mIoU": mIoU,

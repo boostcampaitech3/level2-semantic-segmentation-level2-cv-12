@@ -17,18 +17,17 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 
-
-
 class TestAugmentation: ## testset용
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
+                            A.Normalize(),
                             ToTensorV2(),
                             ])
 
     def __call__(self, image):
         return self.transform(image=image)
+
 
 class ValAugmentation(TestAugmentation): ## valset용 // TestAugmentation에서 적용한 transform 똑같이 적용됩니다.
     def __init__(self, resize, **args):
@@ -42,7 +41,7 @@ class BaseAugmentation:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
+                            A.Normalize(),
                             ToTensorV2(),
                             ])
 
@@ -54,14 +53,56 @@ class BaseAugmentation:
 class Rotate90:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
-                            # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
+                            A.Normalize(),
                             A.RandomRotate90(p=1),
                             ToTensorV2(),
                             ])
 
     def __call__(self, image, mask):
         return self.transform(image=image, mask=mask)
+
+
+class Rotate90_Resize:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            A.Normalize(),
+                            A.RandomRotate90(p=0.6),
+                            A.Resize(resize[0], resize[1]),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
+
+
+class Rch_augmentation:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            # A.Resize(resize[0], resize[1]),
+                            A.RandomRotate90(p=1),
+                            A.RandomBrightnessContrast(p=0.4),
+                            A.HueSaturationValue(hue_shift_limit=23, sat_shift_limit=30, val_shift_limit=25, p=0.4),
+                            A.Normalize(),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
+
+class Hori_Ro_Bri_Hue:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            A.HorizontalFlip(),
+                            A.RandomRotate90(),
+                            A.RandomBrightnessContrast(),
+                            A.HueSaturationValue(hue_shift_limit=15, sat_shift_limit=20, val_shift_limit=23, p=0.4),
+                            A.Normalize(),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
+
 
 class dragon_Augmentation:
     def __init__(self, resize, **args):
@@ -79,7 +120,25 @@ class dragon_Augmentation:
                                 A.Blur(p=1),
                                 A.GaussianBlur(p=1)     
                             ]),
-                            A.Normalize(max_pixel_value=1),
+                            A.Normalize(max_pixel_value=1)
+        ])
+    def __call__(self, image, mask):
+        return self.transform(image=image, mask=mask)
+
+class jina_aug:
+    def __init__(self, **args):
+        self.transform = A.Compose([
+                            A.HorizontalFlip(),
+                            A.RandomRotate90(),
+                            A.RandomResizedCrop(height=512, width=512, scale=(0.5, 0.9),p=0.5),
+                            A.Normalize(),
+                            A.OneOf([
+                                A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=1),
+                                A.RGBShift(r_shift_limit=0.5, g_shift_limit=0.5, b_shift_limit=0.5, p=1),
+                                A.Blur(p=1),
+                                A.GaussianBlur(p=1),
+                            ], p=0.2),
+
                             ToTensorV2(),
                             ])
 
@@ -105,7 +164,7 @@ class BaseDataset(Dataset):
         # cv2 를 활용하여 image 불러오기
         images = cv2.imread(os.path.join(self.dataset_path, image_infos['file_name']))
         images = cv2.cvtColor(images, cv2.COLOR_BGR2RGB).astype(np.float32)
-        images /= 255.0
+        
         
         if (self.mode in ('train', 'val')):
             ann_ids = self.coco.getAnnIds(imgIds=image_infos['id'])
@@ -151,17 +210,3 @@ class BaseDataset(Dataset):
                 return cats[i]['name']
         return "None"
 
-
-class Rch_augmentation:
-    def __init__(self, resize, **args):
-        self.transform = A.Compose([
-                            # A.Resize(resize[0], resize[1]),
-                            # A.Normalize(),
-                            A.RandomRotate90(p=1),
-                            A.RandomBrightnessContrast(p=0.4),
-                            A.HueSaturationValue(hue_shift_limit=23, sat_shift_limit=30, val_shift_limit=25, p=0.4),
-                            ToTensorV2(),
-                            ])
-
-    def __call__(self, image, mask):
-        return self.transform(image=image, mask=mask)

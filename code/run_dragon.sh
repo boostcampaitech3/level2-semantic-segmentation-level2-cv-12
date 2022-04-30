@@ -2,7 +2,7 @@
 # --model과 --augmentation 설정 꼭 확인해주세요!
 # --exp_name에 실험폴더이름을 정할 수 있습니다 / 안적어주시면 $modelClass_$augmenationClass로 폴더생깁니다.
 python baseline/train.py --model UnetPlusPlus_Efficient_b7\
-                         --augmentation dragon_Augmentation \
+                         --augmentation jina_aug \
                          --epochs 100 \
                          --lr 1e-4 \
                          --lr_decay_step 15 \
