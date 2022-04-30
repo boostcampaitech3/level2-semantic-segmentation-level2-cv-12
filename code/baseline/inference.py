@@ -103,7 +103,7 @@ def inference(test_path, args):
 
     print("Calculating inference results..")
 
-    submission = pd.read_csv('baseline/sample_submission.csv', index_col=None)
+    submission = pd.read_csv('/opt/ml/input/level2-semantic-segmentation-level2-cv-12/code/baseline/sample_submission.csv', index_col=None)
 
     file_names, preds = test(model, test_loader, device)
     for file_name, string in zip(file_names, preds):
@@ -122,16 +122,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Data and model checkpoints directories
-    parser.add_argument('--batch_size', type=int, default=16, help='input batch size for validing (default: 1000)')
+    parser.add_argument('--batch_size', type=int, default=8, help='input batch size for validing (default: 1000)')
     parser.add_argument('--resize', type=tuple, default=(512, 512))
-    parser.add_argument('--model', type=str, default='BaseModel', help='model type (default: BaseModel)')
+    parser.add_argument('--model', type=str, default='UnetPlusPlus_Efficient_b7', help='model type (default: BaseModel)')
 
     # Container environment
     parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_EVAL', '/opt/ml/input/data'))
 
     # segmentation
     parser.add_argument('--dataset_path', type=str, default='/opt/ml/input/data')
-    parser.add_argument('--model_path', type=str, default='')
+    parser.add_argument('--model_path', type=str, default='/opt/ml/input/level2-semantic-segmentation-level2-cv-12/saved/drgon_UnetPlusPlus_Efficient_b5/epoch0048_mIoU05671.pth')
     
     args = parser.parse_args()
 

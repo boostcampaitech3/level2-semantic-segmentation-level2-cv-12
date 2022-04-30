@@ -84,7 +84,7 @@ def validation(epoch, model, data_loader, criterion, device):
                 outputs = model(images)['out']
             else:
                 outputs = model(images)
-
+            
             loss = criterion(outputs, masks)
             total_loss += loss
             cnt += 1
