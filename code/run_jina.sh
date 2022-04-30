@@ -5,11 +5,12 @@ python baseline/train.py --model UnetPlusPlus_Efficient5_N \
                          --augmentation jina_aug \
                          --epochs 100 \
                          --lr 1e-4 \
-                         --lr_decay_step 25 \
+                         --lr_decay_step 30 \
                          --exp_name "" \
                          --user jina \
                          --optimizer AdamW \
-                         --batch_size 8
+                         --batch_size 8 \
+                         --fold 0
 
 # Inference
 # --model_path에 사용하고자하는 pth파일 경로를 설정해주세요
