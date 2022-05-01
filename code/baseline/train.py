@@ -21,8 +21,7 @@ from tqdm import tqdm
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from utils import label_accuracy_score, add_hist
-from kornia.losses import focal_loss
-from loss import dice_loss
+
 import wandb
 
 category_dict = {0:'Background', 1:'General trash', 2:'Paper', 3:'Paper pack', 4:'Metal', 5:'Glass', 
