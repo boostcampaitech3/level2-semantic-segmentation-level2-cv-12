@@ -318,11 +318,14 @@ if __name__ == '__main__':
     
     # wandb
     parser.add_argument('--user', type=str)    
+
+    # fold
+    parser.add_argument('--fold', type=int, default=0)
     
     args = parser.parse_args()
     print(args)
 
-    train_path =  args.dataset_path + '/train.json'
-    val_path = args.dataset_path + '/val.json'
+    train_path =  args.dataset_path + f'/train_fold{args.fold}.json'
+    val_path = args.dataset_path + f'/val_fold{args.fold}.json'
 
     train(train_path, val_path, args)

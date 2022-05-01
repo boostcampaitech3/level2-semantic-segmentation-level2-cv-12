@@ -136,8 +136,7 @@ class jina_aug:
                                 A.RGBShift(r_shift_limit=0.5, g_shift_limit=0.5, b_shift_limit=0.5, p=1),
                                 A.Blur(p=1),
                                 A.GaussianBlur(p=1),
-                            ], p=0.2),
-
+                            ], p=0.3),
                             ToTensorV2(),
                             ])
 
