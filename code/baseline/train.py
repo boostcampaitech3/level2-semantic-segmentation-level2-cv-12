@@ -7,6 +7,7 @@ import random
 import re
 from importlib import import_module
 from pathlib import Path
+from tkinter import E
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +21,8 @@ from tqdm import tqdm
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from utils import label_accuracy_score, add_hist
-
+from kornia.losses import focal_loss
+from loss import dice_loss
 import wandb
 
 category_dict = {0:'Background', 1:'General trash', 2:'Paper', 3:'Paper pack', 4:'Metal', 5:'Glass', 
@@ -183,12 +185,12 @@ def train(train_path, val_path, args):
 
     # -- loss & metric
     criterion = create_criterion(args.criterion)  # default: cross_entropy
-    opt_module = getattr(import_module("torch.optim"), args.optimizer)
-    optimizer = opt_module(
-        model.parameters(),
-        lr=args.lr,
-        weight_decay=1e-6
-    )
+    # optimizer = opt_module(
+    #     model.parameters(),
+    #     lr=args.lr,
+    #     weight_decay=1e-6
+    # )
+    optimizer = torch.optim.AdamW(model.parameters(),lr=args.lr,weight_decay=1e-6)
     scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
 
 

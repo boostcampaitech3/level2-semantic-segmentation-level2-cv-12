@@ -120,7 +120,6 @@ class dragon_Augmentation:
                                 A.Blur(p=1),
                                 A.GaussianBlur(p=1)     
                             ]),
-                            A.Normalize(max_pixel_value=1)
         ])
     def __call__(self, image, mask):
         return self.transform(image=image, mask=mask)

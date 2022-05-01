@@ -64,23 +64,12 @@ class F1Loss(nn.Module):
         f1 = f1.clamp(min=self.epsilon, max=1 - self.epsilon)
         return 1 - f1.mean()
 
-class BCE_loss(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(pred,label):
-        bce_loss = nn.BCELoss(size_average=True)
-        bce_out = bce_loss(pred, label)
-        return bce_out
-
 _criterion_entrypoints = {
     'cross_entropy': nn.CrossEntropyLoss,
     'focal': FocalLoss,
     'label_smoothing': LabelSmoothingLoss,
-    'f1': F1Loss,
-    'BCE': BCE_loss
+    'f1': F1Loss
 }
-
 
 def criterion_entrypoint(criterion_name):
     return _criterion_entrypoints[criterion_name]
