@@ -184,12 +184,12 @@ def train(train_path, val_path, args):
 
     # -- loss & metric
     criterion = create_criterion(args.criterion)  # default: cross_entropy
-    # optimizer = opt_module(
-    #     model.parameters(),
-    #     lr=args.lr,
-    #     weight_decay=1e-6
-    # )
-    optimizer = torch.optim.AdamW(model.parameters(),lr=args.lr,weight_decay=1e-6)
+    opt_module = getattr(import_module("torch.optim"), args.optimizer)
+    optimizer = opt_module(
+        model.parameters(),
+        lr=args.lr,
+        weight_decay=1e-6
+    )
     scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
 
 
