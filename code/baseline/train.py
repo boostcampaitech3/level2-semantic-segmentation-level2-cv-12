@@ -12,7 +12,7 @@ from tkinter import E
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import StepLR,ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
 from loss import create_criterion
@@ -21,6 +21,9 @@ from tqdm import tqdm
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from utils import label_accuracy_score, add_hist
+
+from loss import *
+from kornia.losses import focal_loss
 
 import wandb
 
@@ -86,7 +89,10 @@ def validation(epoch, model, data_loader, criterion, device):
             else:
                 outputs = model(images)
             
+             # loss 계산 (cross entropy loss)
             loss = criterion(outputs, masks)
+            #섞어쓰고 싶다면 아래와 같이 처리해주기
+            # loss += dice_loss(outputs, masks)
             total_loss += loss
             cnt += 1
             
@@ -183,15 +189,25 @@ def train(train_path, val_path, args):
     model = torch.nn.DataParallel(model)
 
     # -- loss & metric
+   
     criterion = create_criterion(args.criterion)  # default: cross_entropy
-    # optimizer = opt_module(
-    #     model.parameters(),
-    #     lr=args.lr,
-    #     weight_decay=1e-6
-    # )
-    optimizer = torch.optim.AdamW(model.parameters(),lr=args.lr,weight_decay=1e-6)
-    scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
 
+    opt_module = getattr(import_module("torch.optim"), args.optimizer)
+    optimizer = opt_module(
+        model.parameters(),
+        lr=args.lr,
+        weight_decay=0.01
+    )
+    
+    # scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
+    opt_scheduler = getattr(import_module("torch.optim.lr_scheduler"),args.scheduler)
+    if args.scheduler == 'StepLR':
+        scheduler = opt_scheduler(optimizer,args.lr_decay_step,gamma=0.5)
+    elif args.scheduler == 'ReduceLROnPlateau':
+        scheduler = opt_scheduler(optimizer, 'min',verbose=False)
+    elif args.scheduler == 'CosineAnnealingLR':
+        #인자값들은 임시로 변경해서 사용하시면 됩니다.
+        scheduler = opt_scheduler(optimizer, T_max=100, eta_min=0 ,last_epoch=-1, verbose=False )
 
     # -- config & directory settings
     if args.exp_name:
@@ -239,6 +255,7 @@ def train(train_path, val_path, args):
             
             # loss 계산 (cross entropy loss)
             loss = criterion(outputs, masks)
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -258,18 +275,17 @@ def train(train_path, val_path, args):
                             "class_labels" : category_dict}
                         })
                 mask_list.append(wandb_media)
-            
-            hist = add_hist(hist, masks, outputs, n_class=11)
-            acc, acc_cls, mIoU, fwavacc, IoU = label_accuracy_score(hist)
-            
-            # step 주기에 따른 loss 출력
-            if step % 25 == 0:
-                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {scheduler.get_last_lr()[0]}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
-                wandb.log({ "train/loss": loss.item(), 
+            if (step + 1) % args.log_interval == 0:
+                hist = add_hist(hist, masks, outputs, n_class=11)
+                acc, acc_cls, mIoU, fwavacc, IoU = label_accuracy_score(hist)
+                lr_rate = optimizer.param_groups[0]['lr']
+                # step 주기에 따른 loss 출력
+                # pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {scheduler.get_last_lr()[0]}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {lr_rate}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                wandb.log({ "train/loss": loss.item(),
                             "train/mIoU": mIoU,
                             })        
         wandb.log({"train" : mask_list})
-        scheduler.step()
 
         # validation 주기에 따른 loss 출력 및 best model 저장
         val_every = 1
@@ -286,8 +302,10 @@ def train(train_path, val_path, args):
                 best_mIoU = mIoU
                 save_model(model, saved_dir, f'epoch{epoch+1:04d}_mIoU{str(best_mIoU).replace(".","")}.pth')
             print()
-
-
+        if args.scheduler == 'ReduceLROnPlateau':
+            scheduler.step(avrg_loss)
+        else:
+            scheduler.step()
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -320,7 +338,9 @@ if __name__ == '__main__':
 
     # fold
     parser.add_argument('--fold', type=int, default=0)
-    
+    #schedeuler
+    parser.add_argument('--scheduler',type=str,default='StepLR')
+    parser.add_argument('--accumulate_mode',type=bool,default=False)
     args = parser.parse_args()
     print(args)
 

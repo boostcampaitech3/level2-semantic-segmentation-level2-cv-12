@@ -108,18 +108,21 @@ class dragon_Augmentation:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
                             # A.Resize(resize[0], resize[1]),
-                            A.RandomRotate90(1),
-                            A.RandomResizedCrop(height=512,width=512,scale=(0.6,0.9)),
+                            A.HorizontalFlip(),
+                            A.VerticalFlip(),
                             
                             A.OneOf([
-                                A.HueSaturationValue(hue_shift_limit=0.2, sat_shift_limit=0.2,val_shift_limit=0.2,p=0.5),
-                                A.RandomBrightnessContrast(brightness_limit=0.2,contrast_limit=0.2,p=0.5)
-                            ]),
+                                A.RGBShift(r_shift_limit=0.5, g_shift_limit=0.5, b_shift_limit=0.5),
+                                A.RandomRotate90(),
+                            ], p=0.3),
+                            #grid distortion
+                            A.GridDistortion(num_steps=5, distort_limit=0.3, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.5),
+                            #channel shuffle
+                            A.ChannelShuffle(),
 
-                            A.OneOf([
-                                A.Blur(p=1),
-                                A.GaussianBlur(p=1)     
-                            ]),
+                            A.RandomResizedCrop(height=512,width=512,scale=(0.6,0.9)),
+                            # A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0, p=1.0),
+                            
         ])
     def __call__(self, image, mask):
         return self.transform(image=image, mask=mask)

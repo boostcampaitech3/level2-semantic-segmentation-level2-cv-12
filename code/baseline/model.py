@@ -6,8 +6,6 @@ from torchvision import models
 import torch.nn.functional as F
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.encoders import get_preprocessing_fn
-from layers import unetConv2
-from init_weights import init_weights   
 import numpy as np
 """
 사용가능 모델 
