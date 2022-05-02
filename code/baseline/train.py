@@ -91,8 +91,6 @@ def validation(epoch, model, data_loader, criterion, device):
             
              # loss 계산 (cross entropy loss)
             loss = criterion(outputs, masks)
-            #섞어쓰고 싶다면 아래와 같이 처리해주기
-            # loss += dice_loss(outputs, masks)
             total_loss += loss
             cnt += 1
             
