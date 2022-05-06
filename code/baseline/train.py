@@ -98,7 +98,7 @@ def validation(epoch, model, data_loader, criterion, device):
             masks = masks.detach().cpu().numpy()
             
             # wandb image
-            if step % 5 == 0:
+            if step % 10 == 0:
                 wandb_media = wandb.Image(images[0], masks={
                         "predictions" : {
                             "mask_data" : outputs[0],
@@ -225,7 +225,7 @@ def train(train_path, val_path, args):
     # -- wandb setting
     wandb_name = f'{args.user}_{exp_name}'
     wandb.init(entity = 'yolo12', project = 'segmentation', name = wandb_name, config = config)
-    wandb.watch(model, log=all)
+    wandb.watch(model, log=None)
 
     best_loss = 9999999
     best_mIoU = 0
@@ -262,7 +262,7 @@ def train(train_path, val_path, args):
             masks = masks.detach().cpu().numpy()
             
             # wandb image
-            if step % 5 == 0:
+            if step % 30 == 0 and epoch % 3 == 0:
                 wandb_media = wandb.Image(images[0], masks={
                         "predictions" : {
                             "mask_data" : outputs[0],
