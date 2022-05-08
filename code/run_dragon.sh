@@ -12,7 +12,7 @@ python baseline/train.py --model OCRNet_Hr48\
                          --optimizer AdamW \
                          --fold 2 \
                          --seed 42 \
-                         --criterion dwc \
+                         --criterion dfloss \
                          --scheduler CosineAnnealingLR
 # Inference
 # --model_path에 사용하고자하는 pth파일 경로를 설정해주세요
