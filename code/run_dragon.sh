@@ -17,7 +17,4 @@ python baseline/train.py --model OCRNet_Hr48\
 # Inference
 # --model_path에 사용하고자하는 pth파일 경로를 설정해주세요
 # python baseline/inference.py
-<<<<<<< HEAD
-=======
 
->>>>>>> 2ac9a36fedcff1abf380734ed0ddd6b59b411c70
