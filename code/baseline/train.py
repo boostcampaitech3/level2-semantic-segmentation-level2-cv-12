@@ -12,7 +12,11 @@ from tkinter import E
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+<<<<<<< HEAD
 from torch.optim.lr_scheduler import StepLR,ReduceLROnPlateau,CosineAnnealingLR
+=======
+from torch.optim.lr_scheduler import StepLR,ReduceLROnPlateau
+>>>>>>> a532d00b59d9d27b56bcdc60465ff8026937a68f
 from torch.utils.data import DataLoader
 
 from loss import create_criterion
@@ -98,7 +102,7 @@ def validation(epoch, model, data_loader, criterion, device):
             masks = masks.detach().cpu().numpy()
             
             # wandb image
-            if step % 5 == 0:
+            if step % 10 == 0:
                 wandb_media = wandb.Image(images[0], masks={
                         "predictions" : {
                             "mask_data" : outputs[0],
@@ -189,6 +193,26 @@ def train(train_path, val_path, args):
     # -- loss & metric
    
     criterion = create_criterion(args.criterion)  # default: cross_entropy
+<<<<<<< HEAD
+=======
+
+    opt_module = getattr(import_module("torch.optim"), args.optimizer)
+    optimizer = opt_module(
+        model.parameters(),
+        lr=args.lr,
+        weight_decay=0.01
+    )
+    
+    # scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
+    opt_scheduler = getattr(import_module("torch.optim.lr_scheduler"),args.scheduler)
+    if args.scheduler == 'StepLR':
+        scheduler = opt_scheduler(optimizer,args.lr_decay_step,gamma=0.5)
+    elif args.scheduler == 'ReduceLROnPlateau':
+        scheduler = opt_scheduler(optimizer, 'min',verbose=False)
+    elif args.scheduler == 'CosineAnnealingLR':
+        #인자값들은 임시로 변경해서 사용하시면 됩니다.
+        scheduler = opt_scheduler(optimizer, T_max=100, eta_min=0 ,last_epoch=-1, verbose=False )
+>>>>>>> a532d00b59d9d27b56bcdc60465ff8026937a68f
 
     opt_module = getattr(import_module("torch.optim"), args.optimizer)
     optimizer = opt_module(
@@ -224,7 +248,7 @@ def train(train_path, val_path, args):
     # -- wandb setting
     wandb_name = f'{args.user}_{exp_name}'
     wandb.init(entity = 'yolo12', project = 'segmentation', name = wandb_name, config = config)
-    wandb.watch(model, log=all)
+    wandb.watch(model, log=None)
 
     best_loss = 9999999
     best_mIoU = 0
@@ -261,7 +285,7 @@ def train(train_path, val_path, args):
             masks = masks.detach().cpu().numpy()
             
             # wandb image
-            if step % 5 == 0:
+            if step % 30 == 0 and epoch % 3 == 0:
                 wandb_media = wandb.Image(images[0], masks={
                         "predictions" : {
                             "mask_data" : outputs[0],
@@ -272,6 +296,7 @@ def train(train_path, val_path, args):
                             "class_labels" : category_dict}
                         })
                 mask_list.append(wandb_media)
+<<<<<<< HEAD
             if args.accumulate_mode == True:
                 if (step + 1) % args.log_interval == 0:
                     hist = add_hist(hist, masks, outputs, n_class=11)
@@ -291,6 +316,18 @@ def train(train_path, val_path, args):
                     wandb.log({ "train/loss": loss.item(),
                                 "train/mIoU": mIoU,
                                 })        
+=======
+            if (step + 1) % args.log_interval == 0:
+                hist = add_hist(hist, masks, outputs, n_class=11)
+                acc, acc_cls, mIoU, fwavacc, IoU = label_accuracy_score(hist)
+                lr_rate = optimizer.param_groups[0]['lr']
+                # step 주기에 따른 loss 출력
+                # pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {scheduler.get_last_lr()[0]}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                pbar.set_description(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], lr: {lr_rate}, Loss: {round(loss.item(),4)}, mIoU: {round(mIoU,4)}')
+                wandb.log({ "train/loss": loss.item(),
+                            "train/mIoU": mIoU,
+                            })        
+>>>>>>> a532d00b59d9d27b56bcdc60465ff8026937a68f
         wandb.log({"train" : mask_list})
 
         # validation 주기에 따른 loss 출력 및 best model 저장

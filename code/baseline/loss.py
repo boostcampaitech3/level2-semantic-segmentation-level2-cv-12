@@ -132,6 +132,7 @@ class DiceAndFocalLoss(nn.Module):
         self.loss += dice_loss(pred, label.squeeze(1), True, k = 0.75)
         return self.loss
 
+<<<<<<< HEAD
 class DiceWCELoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
         super(DiceWCELoss, self).__init__()
@@ -155,13 +156,19 @@ class DiceWCELoss(nn.Module):
         dice_wce = wce  + dice_loss 
         return dice_wce    
 
+=======
+>>>>>>> a532d00b59d9d27b56bcdc60465ff8026937a68f
 _criterion_entrypoints = {
     'cross_entropy': nn.CrossEntropyLoss,
     'focal': FocalLoss,
     'label_smoothing': LabelSmoothingLoss,
     'f1': F1Loss,
+<<<<<<< HEAD
     'dfloss': DiceAndFocalLoss,
     'dwc':DiceWCELoss
+=======
+    'dfloss': DiceAndFocalLoss
+>>>>>>> a532d00b59d9d27b56bcdc60465ff8026937a68f
 }
 
 
