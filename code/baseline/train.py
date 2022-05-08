@@ -14,6 +14,7 @@ import numpy as np
 import torch
 from torch.optim.lr_scheduler import StepLR,ReduceLROnPlateau,CosineAnnealingLR
 from torch.utils.data import DataLoader
+
 from loss import create_criterion
 
 from tqdm import tqdm
@@ -188,7 +189,6 @@ def train(train_path, val_path, args):
     # -- loss & metric
    
     criterion = create_criterion(args.criterion)  # default: cross_entropy
-
     opt_module = getattr(import_module("torch.optim"), args.optimizer)
     optimizer = opt_module(
         model.parameters(),
