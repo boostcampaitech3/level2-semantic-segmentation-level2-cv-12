@@ -107,19 +107,12 @@ class Hori_Ro_Bri_Hue:
 class dragon_Augmentation:
     def __init__(self, resize, **args):
         self.transform = A.Compose([
-                            # A.Resize(resize[0], resize[1]),
-                            A.RandomRotate90(1),
-                            A.RandomResizedCrop(height=512,width=512,scale=(0.6,0.9)),
+                            A.HorizontalFlip(p=0.5),
+                            A.VerticalFlip(p=0.5),
+                            A.RandomRotate90(p=0.5),
+                            A.Normalize(),
+                            ToTensorV2()
                             
-                            A.OneOf([
-                                A.HueSaturationValue(hue_shift_limit=0.2, sat_shift_limit=0.2,val_shift_limit=0.2,p=0.5),
-                                A.RandomBrightnessContrast(brightness_limit=0.2,contrast_limit=0.2,p=0.5)
-                            ]),
-
-                            A.OneOf([
-                                A.Blur(p=1),
-                                A.GaussianBlur(p=1)     
-                            ]),
         ])
     def __call__(self, image, mask):
         return self.transform(image=image, mask=mask)
@@ -136,8 +129,7 @@ class jina_aug:
                                 A.RGBShift(r_shift_limit=0.5, g_shift_limit=0.5, b_shift_limit=0.5, p=1),
                                 A.Blur(p=1),
                                 A.GaussianBlur(p=1),
-                            ], p=0.2),
-
+                            ], p=0.3),
                             ToTensorV2(),
                             ])
 

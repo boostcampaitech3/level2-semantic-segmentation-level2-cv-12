@@ -6,8 +6,6 @@ from torchvision import models
 import torch.nn.functional as F
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.encoders import get_preprocessing_fn
-from layers import unetConv2
-from init_weights import init_weights   
 import numpy as np
 """
 사용가능 모델 
@@ -1026,7 +1024,7 @@ class AtrousSpatialPyramidPooling(nn.Module):
     
 
 class DeepLabV3(nn.Module):
-    def __init__(self,num_classes):
+    def __init__(self,num_classes=11):
         super().__init__()
         self.backbone = ConvNeXt()
         self.aspp = AtrousSpatialPyramidPooling(2048,256)
@@ -1047,8 +1045,26 @@ class DeepLabV3(nn.Module):
         ) 
         return out
 
+from ocrnet import get_seg_model
+from config import config
 
+config_path= '/opt/ml/input/level2-semantic-segmentation-level2-cv-12/code/baseline/seg_hrnetv2_w48.yaml'
+cfg = config
+cfg.defrost()
+cfg.merge_from_file(config_path)
+cfg.freeze()
 
+class OCRNet_Hr48(nn.Module):
+    def __init__(self,num_classes=11):
+        super().__init__()        
+        self.backbone = get_seg_model(cfg)
+        self.backbone.cls_head = nn.Conv2d(512,num_classes, kernel_size=(1,1),stride=(1,1))
+        self.backbone.aux_head[3] = nn.Conv2d(720,num_classes, kernel_size=(1,1), stride=(1,1))
+    #@autocast()
+    def forward(self, x):
+        x = self.backbone(x)
+        x = F.interpolate(input=x[0], size=(512, 512), mode='bilinear', align_corners=True)
+        return x
 
 # Custom Model Template
 class MyModel(nn.Module):

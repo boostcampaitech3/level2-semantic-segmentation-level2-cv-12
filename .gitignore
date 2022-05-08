@@ -4,3 +4,4 @@
 !/saved/.gitkeep
 /code/baseline/__pycache__
 /code/wandb
+/code/baseline/pretrained_models/*
