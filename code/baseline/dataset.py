@@ -74,6 +74,28 @@ class Rotate90_Resize:
     def __call__(self, image, mask):
         return self.transform(image=image, mask=mask)
 
+class Rotate90_Closing:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            A.Normalize(max_pixel_value=1),
+                            A.RandomRotate90(p=1),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        roi = mask == 8
+        background_roi = mask==0
+        kernel_size = 30
+        kernel = np.ones((kernel_size, kernel_size), np.uint8)
+        ret = cv2.morphologyEx(roi.astype(np.uint8), cv2.MORPH_CLOSE, kernel)
+        
+        ret_mask = mask.copy()
+        ret_mask += ret *100
+        ret_mask[ret_mask >= 100] = 8
+        ret_mask += background_roi * 100
+        ret_mask[ret_mask >= 100] = 0
+
+        return self.transform(image=image, mask=ret_mask)
 
 class Rch_augmentation:
     def __init__(self, resize, **args):

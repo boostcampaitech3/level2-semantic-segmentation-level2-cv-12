@@ -24,6 +24,7 @@ UnetPlusPlus_Efficient_b5,
 
 """
 
+from models import STLNet
 
 class BaseModel(nn.Module):
     def __init__(self):
@@ -1064,6 +1065,23 @@ class OCRNet_Hr48(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         x = F.interpolate(input=x[0], size=(512, 512), mode='bilinear', align_corners=True)
+        return x
+
+
+class STL(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.stl = STLNet.STL(3)
+        self.head = nn.Sequential(
+                        nn.Conv2d(768, 128, kernel_size=3, stride=1, padding=1, bias=False),
+                        nn.BatchNorm2d(128),
+                        nn.Dropout(p=0.1),
+                        nn.Conv2d(128, 11, kernel_size=1)
+                    )
+
+    def forward(self, x):
+        x = self.stl(x)
+        x = self.head(x)
         return x
 
 # Custom Model Template
