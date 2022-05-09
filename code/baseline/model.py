@@ -26,6 +26,7 @@ UnetPlusPlus_Efficient_b5,
 
 from models import STLNet
 
+
 class BaseModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -1071,18 +1072,12 @@ class OCRNet_Hr48(nn.Module):
 class STL(nn.Module):
     def __init__(self):
         super().__init__()
-        self.stl = STLNet.STL(3)
-        self.head = nn.Sequential(
-                        nn.Conv2d(768, 128, kernel_size=3, stride=1, padding=1, bias=False),
-                        nn.BatchNorm2d(128),
-                        nn.Dropout(p=0.1),
-                        nn.Conv2d(128, 11, kernel_size=1)
-                    )
+        self.stl = STLNet.STL()
 
     def forward(self, x):
         x = self.stl(x)
-        x = self.head(x)
         return x
+
 
 # Custom Model Template
 class MyModel(nn.Module):
