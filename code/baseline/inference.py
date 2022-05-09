@@ -154,11 +154,8 @@ if __name__ == '__main__':
 
     # segmentation
     parser.add_argument('--dataset_path', type=str, default='/opt/ml/input/data')
-<<<<<<< HEAD
-    parser.add_argument('--model_path', type=str, default='/opt/ml/input/level2-semantic-segmentation-level2-cv-12/saved/drgon_OCRNet_Hr48_fold2/epoch0029_mIoU06535.pth')
-=======
-    parser.add_argument('--model_path', type=str, default='/opt/ml/input/level2-semantic-segmentation-level2-cv-12/saved/drgon_UnetPlusPlus_Efficient_b5/epoch0048_mIoU05671.pth')
->>>>>>> a532d00b59d9d27b56bcdc60465ff8026937a68f
+    parser.add_argument('--model_path', type=str, default='/opt/ml/input/level2-semantic-segmentation-level2-cv-12/saved/')
+
     parser.add_argument('--user', type=str)
 
     args = parser.parse_args()
