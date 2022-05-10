@@ -1063,7 +1063,7 @@ class OCRNet_Hr48(nn.Module):
     #@autocast()
     def forward(self, x):
         x = self.backbone(x)
-        x = F.interpolate(input=x[0], size=(512, 512), mode='bilinear', align_corners=True)
+        x = F.interpolate(input=x[0], size=(512, 512), mode='bicubic', align_corners=True)
         return x
 
 # Custom Model Template

@@ -14,7 +14,7 @@ def evaluation(gt_dir, pred_dir):
         gt_dir (string) : root directory of ground truth file
         pred_dir (string) : root directory of prediction file (output of inference.py)
     """
-    num_classes = 18
+    num_classes = 11
     results = {}
 
     gt = pd.read_csv(os.path.join(gt_dir, 'gt.csv'))
