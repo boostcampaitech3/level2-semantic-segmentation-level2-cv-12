@@ -24,7 +24,7 @@ from albumentations.pytorch import ToTensorV2
 from utils import label_accuracy_score, add_hist
 
 from loss import *
-from kornia.losses import focal_loss
+# from kornia.losses import focal_loss
 
 import wandb
 
@@ -153,6 +153,7 @@ def train(train_path, val_path, args):
 
     # -- dataset
     dataset_module = getattr(import_module("dataset"), args.dataset)  # default: BaseDataset
+    val_dataset_module = getattr(import_module("dataset"), 'BaseDataset')  # default: BaseDataset
     train_dataset = dataset_module(
         data_dir=train_path,
         dataset_path = args.dataset_path,
@@ -160,7 +161,7 @@ def train(train_path, val_path, args):
         transform=train_transform
     )
 
-    val_dataset = dataset_module(
+    val_dataset = val_dataset_module(
         data_dir=val_path,
         dataset_path = args.dataset_path,
         mode='val',
