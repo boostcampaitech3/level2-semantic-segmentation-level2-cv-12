@@ -266,7 +266,6 @@ class AddPseudo(Dataset):
             index -= len(self.coco.getImgIds())
             images = cv2.imread(self.dataset_path+'/'+self.pseudo_imgs[index])
             images = cv2.cvtColor(images, cv2.COLOR_BGR2RGB).astype(np.float32)
-            images /= 255.0
             masks = np.load(self.pseudo_masks[index])
             image_infos = None
             
