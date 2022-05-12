@@ -77,7 +77,7 @@ def pseudo():
     ##### best mIoU pth #####
     model_path = args.model_path
     checkpoint = torch.load(model_path, map_location=device)
-    model = UnetPlusPlus_Efficient5_N().to(device)
+    model = OCRNet_Hr48().to(device)
     model.load_state_dict(checkpoint)
     # sample_submisson.csv 열기
     submission = pd.read_csv('/opt/ml/input/level2-semantic-segmentation-level2-cv-12/code/baseline/sample_submission.csv', index_col=None)
@@ -119,7 +119,7 @@ def pseudo():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='/opt/ml/input/level2-semantic-segmentation-level2-cv-12/saved/UnetPlusPlus_Efficient5_N_jina_aug_13/epoch0079_mIoU06179.pth')
+    parser.add_argument('--model_path', type=str, default='/opt/ml/input/level2-semantic-segmentation-level2-cv-12/saved/drgon_OCRNet_Hr48_fold2_aug/epoch0074_mIoU06578.pth')
     args = parser.parse_args()
 
     pseudo()

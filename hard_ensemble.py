@@ -4,14 +4,14 @@ import os
 
 # 앙상블할 output.csv 파일들을 한 폴더에 넣어줍니다.
 # 파일명 앞을 점수로 넣어서 성능이 좋은 순서대로 정렬되도록 했습니다.
-output_list = os.listdir('/opt/ml/input/code/output_csv')
+output_list = os.listdir('/opt/ml/input/level2-semantic-segmentation-level2-cv-12/code/baseline/output_csv')
 output_list.sort(reverse=True)
 
 # pandas dataframe으로 만들어줍니다.
 df_list = []
 
 for output in output_list:
-    df_list.append(pd.read_csv(f'/opt/ml/input/code/output_csv/{output}'))
+    df_list.append(pd.read_csv(f'/opt/ml/input/level2-semantic-segmentation-level2-cv-12/code/baseline/output_csv/{output}'))
 
 # submission dataframe
 submission = pd.DataFrame()
