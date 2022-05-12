@@ -1,17 +1,20 @@
 ## 공통 model 설정
-model=Deeplabv3_Resnet101
+# model=Deeplabv3_Resnet101
+# model=BaseModel
+model=STL
 
 # Training
 # --model과 --augmentation 설정 꼭 확인해주세요!
 # --exp_name에 실험폴더이름을 정할 수 있습니다 / 안적어주시면 $modelClass_$augmenationClass로 폴더생깁니다.
 python baseline/train.py --model $model \
-                         --augmentation Rotate90 \
+                         --augmentation Rotate90_CropNonEmptyMaskIfExists \
                          --epochs 70 \
-                         --lr 1e-4 \
-                         --lr_decay_step 15 \
+                         --lr 1e-5 \
+                         --lr_decay_step 10 \
                          --exp_name "" \
                          --user hongrok \
-                         --batch_size 8
+                         --batch_size 4 \
+                         --resize "[512, 512]"
 
 
 # Inference
@@ -22,5 +25,5 @@ pwd=$(pwd)
 dir=${pwd%/*}/saved
 pth=$(ls $dir/*/*.pth -tr | tail -1)
 
-python baseline/inference.py --model $model \
-                             --model_path $pth
+# python baseline/inference.py --model $model \
+#                              --model_path $pth

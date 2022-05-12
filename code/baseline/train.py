@@ -19,16 +19,17 @@ from loss import create_criterion
 
 from tqdm import tqdm
 import albumentations as A
+from PIL import Image, ImageDraw, ImageFont
 from albumentations.pytorch import ToTensorV2
 from utils import label_accuracy_score, add_hist
 
 from loss import *
-from kornia.losses import focal_loss
+# from kornia.losses import focal_loss
 
 import wandb
 
 category_dict = {0:'Background', 1:'General trash', 2:'Paper', 3:'Paper pack', 4:'Metal', 5:'Glass', 
-                  6:'Plastic', 7:'Styrofoam', 8:'Plastic bag', 9:'Battery',10:'Clothing'}
+                  6:'Plastic', 7:'Styrofoam', 8:'Plastic bag', 9:'Battery',10:'Clothing', 12:'Label'}
 
 def seed_everything(seed):
     torch.manual_seed(seed)
@@ -152,6 +153,7 @@ def train(train_path, val_path, args):
 
     # -- dataset
     dataset_module = getattr(import_module("dataset"), args.dataset)  # default: BaseDataset
+    val_dataset_module = getattr(import_module("dataset"), 'BaseDataset')  # default: BaseDataset
     train_dataset = dataset_module(
         data_dir=train_path,
         dataset_path = args.dataset_path,
@@ -159,7 +161,7 @@ def train(train_path, val_path, args):
         transform=train_transform
     )
 
-    val_dataset = dataset_module(
+    val_dataset = val_dataset_module(
         data_dir=val_path,
         dataset_path = args.dataset_path,
         mode='val',
@@ -233,7 +235,7 @@ def train(train_path, val_path, args):
         hist = np.zeros((11, 11))
         pbar = tqdm(enumerate(train_loader), total=len(train_loader))
         mask_list = []
-        for step, (images, masks, _) in pbar:
+        for step, (images, masks, infos) in pbar:
             images = torch.stack(images)       
             masks = torch.stack(masks).long() 
             
@@ -261,15 +263,34 @@ def train(train_path, val_path, args):
             
             # wandb image
             if step % 30 == 0 and epoch % 3 == 0:
-                wandb_media = wandb.Image(images[0], masks={
-                        "predictions" : {
-                            "mask_data" : outputs[0],
-                            "class_labels" : category_dict
-                            },
-                        "ground_truth" : {
-                            "mask_data" : masks[0],
-                            "class_labels" : category_dict}
-                        })
+                if args.display_fname:
+                    img_id = infos[0]['id']
+                    file_name = infos[0]['file_name']
+                    named_mask = masks[0].copy()
+                    target = Image.fromarray(named_mask.astype(np.uint8))
+                    draw = ImageDraw.Draw(target)
+                    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size=25) 
+                    draw.text([0, 0], f'{img_id}:{file_name}', font=font, fill=12 )
+
+                    wandb_media = wandb.Image(images[0], masks={
+                            "predictions" : {
+                                "mask_data" : outputs[0],
+                                "class_labels" : category_dict
+                                },
+                            "ground_truth" : {
+                                "mask_data" : np.array(target),
+                                "class_labels" : category_dict}
+                            })
+                else:
+                    wandb_media = wandb.Image(images[0], masks={
+                            "predictions" : {
+                                "mask_data" : outputs[0],
+                                "class_labels" : category_dict
+                                },
+                            "ground_truth" : {
+                                "mask_data" : masks[0],
+                                "class_labels" : category_dict}
+                            })
                 mask_list.append(wandb_media)
 
             if args.accumulate_mode == True:
@@ -340,8 +361,9 @@ if __name__ == '__main__':
     parser.add_argument('--dataset_path', type=str, default='/opt/ml/input/data')
     
     # wandb
-    parser.add_argument('--user', type=str)    
-
+    parser.add_argument('--user', type=str)
+    parser.add_argument('--display_fname', type=int, default=0)    
+    
     # fold
     parser.add_argument('--fold', type=int, default=0)
     #schedeuler

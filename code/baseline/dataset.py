@@ -16,6 +16,7 @@ from torchvision.transforms import *
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
+import glob
 
 class TestAugmentation: ## testset용
     def __init__(self, resize, **args):
@@ -74,6 +75,28 @@ class Rotate90_Resize:
     def __call__(self, image, mask):
         return self.transform(image=image, mask=mask)
 
+class Rotate90_Closing:
+    def __init__(self, resize, **args):
+        self.transform = A.Compose([
+                            A.Normalize(max_pixel_value=1),
+                            A.RandomRotate90(p=1),
+                            ToTensorV2(),
+                            ])
+
+    def __call__(self, image, mask):
+        roi = mask == 8
+        background_roi = mask==0
+        kernel_size = 30
+        kernel = np.ones((kernel_size, kernel_size), np.uint8)
+        ret = cv2.morphologyEx(roi.astype(np.uint8), cv2.MORPH_CLOSE, kernel)
+        
+        ret_mask = mask.copy()
+        ret_mask += ret *100
+        ret_mask[ret_mask >= 100] = 8
+        ret_mask += background_roi * 100
+        ret_mask[ret_mask >= 100] = 0
+
+        return self.transform(image=image, mask=ret_mask)
 
 class Rch_augmentation:
     def __init__(self, resize, **args):
@@ -201,3 +224,66 @@ class BaseDataset(Dataset):
                 return cats[i]['name']
         return "None"
 
+class AddPseudo(Dataset):
+    """COCO format"""
+    def __init__(self, data_dir, dataset_path, mode = 'train', transform = None):
+        super().__init__()
+        self.mode = mode
+        self.transform = transform
+        self.coco = COCO(data_dir)
+        self.category_names = ['Background', 'General trash', 'Paper', 'Paper pack', 'Metal', 'Glass', 
+                  'Plastic', 'Styrofoam', 'Plastic bag', 'Battery','Clothing']
+        self.dataset_path  = dataset_path
+        
+        self.pseudo_imgs = np.load(self.dataset_path +'/img_name.npy')
+        self.pseudo_masks = sorted(glob.glob(self.dataset_path + '/mask/*.npy'))
+        
+    def __getitem__(self, index: int):
+        
+        ### Train data ###
+        if (index < len(self.coco.getImgIds())):
+            image_id = self.coco.getImgIds(imgIds=index)
+            image_infos = self.coco.loadImgs(image_id)[0]
+
+            images = cv2.imread(self.dataset_path+ '/' +image_infos['file_name'])
+            images = cv2.cvtColor(images, cv2.COLOR_BGR2RGB).astype(np.float32)
+            
+            ann_ids = self.coco.getAnnIds(imgIds=image_infos['id'])
+            anns = self.coco.loadAnns(ann_ids)
+            cat_ids = self.coco.getCatIds()
+            cats = self.coco.loadCats(cat_ids)
+            
+            ############### test의 마스크 생성 
+            masks = np.zeros((image_infos["height"], image_infos["width"]))
+            anns = sorted(anns, key=lambda idx : idx['area'], reverse=True)
+            for i in range(len(anns)):
+                className = self.get_classname(anns[i]['category_id'], cats)
+                pixel_value = self.category_names.index(className)
+                masks = np.maximum(self.coco.annToMask(anns[i])*pixel_value, masks)
+
+        ### Pseudo data ###
+        else:
+            index -= len(self.coco.getImgIds())
+            images = cv2.imread(self.dataset_path+'/'+self.pseudo_imgs[index])
+            images = cv2.cvtColor(images, cv2.COLOR_BGR2RGB).astype(np.float32)
+            images /= 255.0
+            masks = np.load(self.pseudo_masks[index])
+            image_infos = None
+            
+        ###  augmentation ###
+        masks = masks.astype(np.float32)
+        if self.transform is not None:
+            transformed = self.transform(image=images, mask=masks)
+            images = transformed["image"]
+            masks = transformed["mask"]
+            
+        return images, masks, image_infos
+    
+    def __len__(self):
+        return len(self.coco.getImgIds())+len(self.pseudo_imgs)//2
+    
+    def get_classname(self, classID, cats):
+        for i in range(len(cats)):
+            if cats[i]['id']==classID:
+                return cats[i]['name']
+        return "None"
